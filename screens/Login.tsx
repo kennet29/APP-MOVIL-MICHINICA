@@ -1,9 +1,23 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, ActivityIndicator } from "react-native";
+import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 
 export default function Login({ navigation }: any) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [fontsLoaded] = useFonts({
+    Poppins_Regular: Poppins_400Regular,
+    Poppins_Bold: Poppins_700Bold,
+  });
+
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#329bd7" />
+      </View>
+    );
+  }
 
   const handleLogin = () => {
     if (!email || !password) {
@@ -11,18 +25,21 @@ export default function Login({ navigation }: any) {
       return;
     }
 
-    // Simulación de login exitoso
-    if (email === "test@correo.com" && password === "123456") {
-      // Navega a la pantalla principal
-      navigation.replace("Home"); // replace evita que vuelva atrás al login
-    } else {
-      Alert.alert("Error", "Correo o contraseña incorrectos");
-    }
+
+      navigation.replace("Home");
+   
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <Image
+        source={require("./Logotipo Ranas-04.png")}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+
+      <Text style={styles.title}>Iniciar Sesión</Text>
+
       <TextInput
         style={styles.input}
         placeholder="Correo electrónico"
@@ -38,6 +55,7 @@ export default function Login({ navigation }: any) {
         onChangeText={setPassword}
         secureTextEntry
       />
+
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Ingresar</Text>
       </TouchableOpacity>
@@ -50,8 +68,25 @@ export default function Login({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
-  title: { fontSize: 28, marginBottom: 20, fontWeight: "bold" },
+  container: { 
+    flex: 1, 
+    justifyContent: "center", 
+    alignItems: "center", 
+    padding: 20, 
+    backgroundColor: "#FFFF" 
+  },
+  logo: {
+    width: 250,
+    height: 250,
+    borderRadius: 5000,
+    marginTop:-90,
+  },
+  title: { 
+    fontSize: 41, 
+    marginBottom: 40, 
+    color:"#f49953",
+    fontFamily: "Poppins_Bold" 
+  },
   input: {
     width: "100%",
     borderWidth: 1,
@@ -59,8 +94,22 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     marginVertical: 10,
+    fontFamily: "Poppins_Regular",
   },
-  button: { backgroundColor: "#4CAF50", padding: 15, borderRadius: 8, width: "100%", marginTop: 10 },
-  buttonText: { color: "#fff", textAlign: "center", fontWeight: "bold" },
-  link: { marginTop: 15, color: "#007BFF" },
+  button: { 
+    backgroundColor: "#329bd7", 
+    padding: 15, 
+    borderRadius: 8, 
+    width: "100%", 
+  },
+  buttonText: { 
+    color: "#fff", 
+    textAlign: "center", 
+    fontFamily: "Poppins_Bold" 
+  },
+  link: { 
+    marginTop: 15, 
+    color: "#007BFF", 
+    fontFamily: "Poppins_Regular"
+  },
 });
