@@ -21,11 +21,10 @@ export default function HomeScreen({ navigation }: any) {
     Poppins_Bold: Poppins_700Bold,
   });
 
-  const [activeTab, setActiveTab] = useState<'Home' | 'Profile' | 'Mascota'>('Home');
+  const [activeTab, setActiveTab] = useState<'Home' | 'Profile' | 'Mascota' | 'MisionVision'>('Home');
 
-  // Animaciones
   const titleScale = useRef(new Animated.Value(0)).current;
-  const cardsAnim = useRef([0, 1, 2, 3].map(() => new Animated.Value(0))).current;
+  const cardsAnim = useRef([0, 1, 2, 3, 4].map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -33,10 +32,8 @@ export default function HomeScreen({ navigation }: any) {
       NavigationBar.setBackgroundColorAsync('transparent');
     }
 
-    // Animación título
     Animated.spring(titleScale, { toValue: 1, useNativeDriver: true, friction: 5, tension: 80 }).start();
 
-    // Animación cards
     Animated.stagger(
       200,
       cardsAnim.map((anim) =>
@@ -53,29 +50,46 @@ export default function HomeScreen({ navigation }: any) {
     );
   }
 
-  const handleTabPress = (tab: 'Home' | 'Profile' | 'Mascota') => {
+  const handleTabPress = (tab: 'Home' | 'Profile' | 'Mascota' | 'MisionVision') => {
     setActiveTab(tab);
     navigation.navigate(tab);
   };
 
-  const cardColors = ['#e87170', '#f49953', '#9d7bb6', '#00BFFF'];
+  const handleCardPress = (cardName: string) => {
+    if (cardName === 'GUIAS') {
+      navigation.navigate('Guia');
+    } else {
+      console.log(`Card ${cardName} presionada`);
+    }
+  };
+
+  const cardColors = ['#e87170', '#f49953', '#9d7bb6', '#00BFFF', '#FFA500'];
+
+  const cardData = [
+    { name: 'POST', color: cardColors[0], icon: <FontAwesome5 name="edit" size={28} color="#fff" /> },
+    { name: 'MASCOTAS PERDIDAS', color: cardColors[1], icon: <MaterialCommunityIcons name="dog" size={28} color="#fff" /> },
+    { name: 'ADOPCIÓN', color: cardColors[2], icon: <FontAwesome5 name="heart" size={28} color="#fff" /> },
+    { name: 'EVENTOS', color: cardColors[3], icon: <FontAwesome5 name="calendar-alt" size={28} color="#fff" /> },
+    { name: 'GUIAS', color: cardColors[4], icon: <FontAwesome5 name="book" size={28} color="#fff" /> },
+  ];
+
+  const titleLetters = [
+    { letter: 'Z', color: cardColors[0] },
+    { letter: 'O', color: cardColors[1] },
+    { letter: 'Ó', color: cardColors[2] },
+    { letter: 'N', color: '#00BFFF' },
+    { letter: 'I', color: '#00BFFF' },
+    { letter: 'C', color: '#00BFFF' },
+    { letter: 'A', color: '#00BFFF' },
+  ];
 
   return (
     <>
-      <StatusBar hidden={true} />
+      <StatusBar hidden />
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.content}>
-          {/* Título multicolor animado */}
           <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 20 }}>
-            {[
-              { letter: 'Z', color: '#e87170' },
-              { letter: 'O', color: '#f49953' },
-              { letter: 'Ó', color: '#9d7bb6' },
-              { letter: 'N', color: '#00BFFF' },
-              { letter: 'I', color: '#00BFFF' },
-              { letter: 'C', color: '#00BFFF' },
-              { letter: 'A', color: '#00BFFF' },
-            ].map((item, index) => (
+            {titleLetters.map((item, index) => (
               <Animated.Text
                 key={index}
                 style={[styles.title, { color: item.color, transform: [{ scale: titleScale }] }]}
@@ -85,22 +99,28 @@ export default function HomeScreen({ navigation }: any) {
             ))}
           </View>
 
-          {/* Cards multicolor animadas */}
           <View style={styles.cardsContainer}>
-            {['POST', 'MASCOTAS PERDIDAS', 'ADOPCIÓN', 'EVENTOS'].map((card, index) => (
+            {cardData.map((card, index) => (
               <Animated.View
                 key={index}
                 style={{
-                  opacity: cardsAnim[index],
+                  opacity: cardsAnim[index] || new Animated.Value(0),
                   transform: [
                     {
-                      translateY: cardsAnim[index].interpolate({ inputRange: [0, 1], outputRange: [20, 0] }),
+                      translateY: (cardsAnim[index] || new Animated.Value(0)).interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [20, 0],
+                      }),
                     },
                   ],
                 }}
               >
-                <TouchableOpacity style={[styles.card, { backgroundColor: cardColors[index] }]}>
-                  <Text style={styles.cardTitle}>{card}</Text>
+                <TouchableOpacity
+                  style={[styles.card, { backgroundColor: card.color }]}
+                  onPress={() => handleCardPress(card.name)}
+                >
+                  {card.icon}
+                  <Text style={styles.cardTitle}>{card.name}</Text>
                   <Text style={styles.cardText}>Descripción breve</Text>
                 </TouchableOpacity>
               </Animated.View>
@@ -108,7 +128,7 @@ export default function HomeScreen({ navigation }: any) {
           </View>
         </ScrollView>
 
-        {/* Menú inferior estilo Spotify flotante y semi-transparente */}
+        {/* 🔽 Menú inferior actualizado con Misión y Visión */}
         <View style={styles.bottomMenu}>
           <TouchableOpacity onPress={() => handleTabPress('Home')} style={styles.menuItem}>
             <FontAwesome5 name="home" size={24} color={activeTab === 'Home' ? '#1DB954' : '#fff'} />
@@ -118,6 +138,10 @@ export default function HomeScreen({ navigation }: any) {
           </TouchableOpacity>
           <TouchableOpacity onPress={() => handleTabPress('Mascota')} style={styles.menuItem}>
             <MaterialCommunityIcons name="dog" size={28} color={activeTab === 'Mascota' ? '#1DB954' : '#fff'} />
+          </TouchableOpacity>
+          {/* Nuevo botón */}
+          <TouchableOpacity onPress={() => handleTabPress('MisionVision')} style={styles.menuItem}>
+            <FontAwesome5 name="info-circle" size={24} color={activeTab === 'MisionVision' ? '#1DB954' : '#fff'} />
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -140,9 +164,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
+    alignItems: 'center',
   },
-  cardTitle: { fontSize: 18, marginBottom: 5, fontFamily: 'Poppins_Bold', color: '#fff' },
-  cardText: { fontFamily: 'Poppins_Regular', color: '#fff' },
+  cardTitle: { fontSize: 18, marginTop: 10, fontFamily: 'Poppins_Bold', color: '#fff', textAlign: 'center' },
+  cardText: { fontFamily: 'Poppins_Regular', color: '#fff', textAlign: 'center' },
   bottomMenu: {
     position: 'absolute',
     bottom: Platform.OS === 'ios' ? 25 : 25,
