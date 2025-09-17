@@ -13,10 +13,12 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import BottomMenu from "./Menu";
-import ZoonicaTitle from "./Titulo"; // Importamos el título con colores
+import ZoonicaTitle from "./Titulo"; 
 
 export default function MisionVisionScreen({ navigation }: any) {
-  const [activeTab, setActiveTab] = useState<"Home" | "Profile" | "Mascota" | "MisionVision">("MisionVision");
+  const [activeTab, setActiveTab] = useState<"Home" | "Profile" | "Mascota" | "MisionVision">(
+    "MisionVision"
+  );
 
   const [fontsLoaded] = useFonts({
     Poppins_Regular: Poppins_400Regular,
@@ -25,8 +27,8 @@ export default function MisionVisionScreen({ navigation }: any) {
 
   if (!fontsLoaded) {
     return (
-      <View>
-      
+      <View style={styles.loading}>
+        <Text>Cargando...</Text>
       </View>
     );
   }
@@ -38,25 +40,29 @@ export default function MisionVisionScreen({ navigation }: any) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container} style={{ marginBottom: 80 }}>
-        
-        {/* Título Zoonica */}
-        <View style={{ marginBottom: 20 }}>
+      <ScrollView contentContainerStyle={styles.container} style={{ marginBottom: 10 }}>
+
+        <View style={{ marginBottom: 5, alignItems: "center", marginTop: 50 }}>
           <ZoonicaTitle
             size={48}
-            colors={["#1DB954", "#329bd7", "#F39C12", "#E74C3C", "#8E44AD", "#16A085", "#D35400"]}
+            colors={["#e87170", "#f49953", "#9d7bb6", "#00BFFF", "#FFA500"]}
+          />
+
+          <Image
+            source={require("./QuinesSomos.png")}
+            style={{ width: "100%", height: 320, resizeMode: "contain", marginTop: 15 }}
           />
         </View>
 
-        {/* Misión */}
-        <View style={[styles.card, { borderColor: "#1DB954" }]}>
+        <View style={[styles.card, { borderColor: "#e87170" }]}>
           <View style={styles.imageContainer}>
             <Image
+           
               source={{ uri: "https://cdn-icons-png.flaticon.com/512/616/616408.png" }}
               style={styles.image}
             />
           </View>
-          <Text style={[styles.title, { color: "#1DB954" }]}>Misión</Text>
+          <Text style={[styles.title, { color: "#e87170" }]}>Misión</Text>
           <Text style={styles.text}>
             Ser líder en la promoción del bienestar animal, brindando un espacio
             digital inclusivo que facilite el control y seguimiento responsable
@@ -67,15 +73,14 @@ export default function MisionVisionScreen({ navigation }: any) {
           </Text>
         </View>
 
-        {/* Visión */}
-        <View style={[styles.card, { borderColor: "#329bd7" }]}>
+        <View style={[styles.card, { borderColor: "#9d7bb6" }]}>
           <View style={styles.imageContainer}>
             <Image
               source={{ uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" }}
               style={styles.image}
             />
           </View>
-          <Text style={[styles.title, { color: "#329bd7" }]}>Visión</Text>
+          <Text style={[styles.title, { color: "#9d7bb6" }]}>Visión</Text>
           <Text style={styles.text}>
             Ser un referente digital del bienestar animal en Nicaragua y la
             región, inspirando a una sociedad más consciente, responsable y
@@ -83,6 +88,13 @@ export default function MisionVisionScreen({ navigation }: any) {
             comunidad se unen para garantizar un futuro más digno y saludable
             para nuestra fauna.
           </Text>
+        </View>
+
+        <View style={{ marginTop: 20, alignItems: "center" }}>
+          <Image
+            source={require("./Valores.png")}
+            style={{ width: 500, height: 250, resizeMode: "contain", marginBottom: 50 }}
+          />
         </View>
       </ScrollView>
 

@@ -12,6 +12,7 @@ import GuiaConejos from "./screens/Conejos";
 import GuiaTortugas from "./screens/Tortuga";
 import GuiaAves from "./screens/Aves";
 import MisionVision from "./screens/MisionVision";
+import RedesSocialesScreen from "./screens/Redes";
 
 const Stack = createNativeStackNavigator();
 
@@ -55,6 +56,7 @@ export default function App() {
         <Stack.Screen name="Tortuga" component={GuiaTortugas}   options={{ headerShown: false }} />
         <Stack.Screen name="Aves" component={GuiaAves}   options={{ headerShown: false }} />
         <Stack.Screen name="MisionVision" component={MisionVision}   options={{ headerShown: false }} />
+        <Stack.Screen name="RedesSocialesScreen" component={RedesSocialesScreen}   options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
