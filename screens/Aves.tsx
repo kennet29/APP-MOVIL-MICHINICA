@@ -1,141 +1,195 @@
-// screens/GuiaAves.tsx
-import React from "react";
-import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
-import {
-  useFonts,
-  Poppins_400Regular,
-  Poppins_700Bold,
-} from "@expo-google-fonts/poppins";
+import React, { useState } from "react";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
+import Menu from "./Menu";
 
-export default function GuiaAves() {
+export default function VacunasAves() {
+  const [activeTab, setActiveTab] = useState<
+    "Home" | "Profile" | "Mascota" | "MisionVision"
+  >("Mascota");
+
+  const handleTabPress = (tab: "Home" | "Profile" | "Mascota" | "MisionVision") => {
+    setActiveTab(tab);
+  };
   const [fontsLoaded] = useFonts({
     Poppins_Regular: Poppins_400Regular,
     Poppins_Bold: Poppins_700Bold,
   });
 
-  if (!fontsLoaded) {
-    return (
-      <View style={styles.center}>
-        <Text>Cargando...</Text>
-      </View>
-    );
-  }
+  // 🔹 Ancho fijo para las columnas
+  const COLUMN_WIDTH = 180;
+
+  const CellHeader = ({ children }: any) => (
+    <Text style={[styles.cellHeader, { width: COLUMN_WIDTH }]}>{children}</Text>
+  );
+
+  const Cell = ({ children }: any) => (
+    <Text style={[styles.cell, { width: COLUMN_WIDTH }]}>{children}</Text>
+  );
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Guía Completa de Aves Domésticas</Text>
+    <View style={{ flex: 1 }}>
+      <ScrollView style={styles.container}>
+        <Text style={styles.title}>Aves de Compañía 🦜</Text>
+        <Text style={styles.subtitle}>Psitácidos y otras aves comunes en Nicaragua</Text>
 
-      <Image
-        source={{ uri: "https://cdn.pixabay.com/photo/2016/02/19/11/53/parrot-1209750_1280.jpg" }}
-        style={styles.image}
-      />
+        <Text style={styles.paragraph}>
+          En Nicaragua, muchas familias tienen aves como mascotas, siendo los psitácidos 
+          (loros, pericos y cotorras) los más comunes. Entre las especies más frecuentes 
+          están el <Text style={styles.bold}>Perico catarina</Text>, el{" "}
+          <Text style={styles.bold}>Perico frente naranja</Text> y el{" "}
+          <Text style={styles.bold}>Loro cabeza amarilla</Text>, conocidos por su 
+          inteligencia y longevidad.{"\n\n"}
+          Estas aves necesitan vacunación preventiva, desparasitación regular 
+          y cuidados especiales en su alimentación y hábitat.
+        </Text>
 
-      <Text style={styles.sectionTitle}>🐦 Introducción</Text>
-      <Text style={styles.text}>
-        Las aves domésticas como los chocoyos, loras y canarios son muy queridas
-        en Nicaragua. Su canto alegre, plumaje colorido y comportamiento social
-        las convierten en excelentes mascotas. Sin embargo, requieren cuidados
-        especiales para garantizar su bienestar físico y emocional.
-      </Text>
+        {/* 📋 Vacunación */}
+        <Text style={styles.section}>📋 Calendario de Vacunación en Aves</Text>
+        <ScrollView horizontal>
+          <View style={[styles.table, { width: COLUMN_WIDTH * 4 }]}>
+            <View style={[styles.rowHeader]}>
+              <CellHeader>Edad / Frecuencia</CellHeader>
+              <CellHeader>Vacuna</CellHeader>
+              <CellHeader>Vía</CellHeader>
+              <CellHeader>Comentarios</CellHeader>
+            </View>
 
-      {/* CHOCOYOS */}
-      <Text style={styles.sectionTitle}>🟢 Chocoyos</Text>
-      <Image
-        source={{ uri: "https://cdn.pixabay.com/photo/2017/09/26/13/34/parakeet-2785503_1280.jpg" }}
-        style={styles.image}
-      />
-      <Text style={styles.text}>
-        Los chocoyos (periquitos verdes) son aves pequeñas, muy sociables y
-        juguetonas. Necesitan una jaula amplia donde puedan moverse y espacio
-        para volar fuera de ella de forma segura. Su alimentación debe incluir
-        semillas, frutas frescas como manzana y papaya, y verduras como zanahoria
-        o espinaca. Les encanta convivir en pareja o grupos, ya que son muy
-        sociales.
-      </Text>
+            <View style={[styles.row, { backgroundColor: "#d0f0c0" }]}>
+              <Cell>Primer mes</Cell>
+              <Cell>Polivalente (Paramixovirus, Circovirus)</Cell>
+              <Cell>Inyección</Cell>
+              <Cell>Recomendada en criaderos grandes</Cell>
+            </View>
 
-      {/* LORAS */}
-      <Text style={styles.sectionTitle}>🦜 Loras</Text>
-      <Image
-        source={{ uri: "https://cdn.pixabay.com/photo/2016/03/27/19/40/parrot-1286440_1280.jpg" }}
-        style={styles.image}
-      />
-      <Text style={styles.text}>
-        Las loras son aves más grandes, con gran capacidad de imitar sonidos y
-        palabras. Son inteligentes y requieren estimulación mental constante.
-        Necesitan juguetes, interacción diaria y una dieta variada con frutas,
-        verduras y pienso especial para aves grandes. Una lora aburrida puede
-        desarrollar comportamientos como arrancarse plumas o volverse agresiva,
-        por lo que su cuidado requiere compromiso.
-      </Text>
+            <View style={[styles.row, { backgroundColor: "#ffe5b4" }]}>
+              <Cell>6-8 semanas</Cell>
+              <Cell>Viruela aviar</Cell>
+              <Cell>Ala</Cell>
+              <Cell>Especialmente en aves de exterior</Cell>
+            </View>
 
-      {/* CANARIOS */}
-      <Text style={styles.sectionTitle}>🎶 Canarios</Text>
-      <Image
-        source={{ uri: "https://cdn.pixabay.com/photo/2017/09/03/08/59/canary-2714841_1280.jpg" }}
-        style={styles.image}
-      />
-      <Text style={styles.text}>
-        Los canarios son aves pequeñas conocidas por su canto melodioso. No son
-        tan sociales como los chocoyos o loras, pero disfrutan de un ambiente
-        tranquilo. Su dieta debe estar basada en semillas, complementada con
-        frutas y vegetales. Requieren jaulas limpias, baños de agua fresca y
-        buena ventilación. Los machos suelen cantar más que las hembras.
-      </Text>
+            <View style={[styles.row, { backgroundColor: "#f8d7da" }]}>
+              <Cell>12 semanas</Cell>
+              <Cell>Newcastle (PMV-1)</Cell>
+              <Cell>Inyección</Cell>
+              <Cell>Zonas endémicas y granjas</Cell>
+            </View>
 
-      <Text style={styles.sectionTitle}>🏥 Salud y Cuidados Generales</Text>
-      <Text style={styles.text}>
-        - Mantener la jaula limpia evita enfermedades.{"\n"}
-        - Proveer agua fresca a diario.{"\n"}
-        - Evitar corrientes de aire frío.{"\n"}
-        - Ofrecer baños de agua o arena según la especie.{"\n"}
-        - Visitas regulares al veterinario especializado en aves.{"\n"}
-      </Text>
+            <View style={[styles.row, { backgroundColor: "#d0f0c0" }]}>
+              <Cell>Anual</Cell>
+              <Cell>Refuerzo Newcastle {"\n"} Rabia {"\n"} Circovirus</Cell>
+              <Cell>Inyección</Cell>
+              <Cell>Según riesgo y región</Cell>
+            </View>
+          </View>
+        </ScrollView>
 
-      <Text style={styles.sectionTitle}>📌 Resumen</Text>
-      <Text style={styles.text}>
-        - Los chocoyos son sociables y activos.{"\n"}
-        - Las loras requieren mucha interacción y estimulación.{"\n"}
-        - Los canarios son tranquilos y destacan por su canto.{"\n"}
-        - Todas las aves necesitan espacio, alimentación variada y atención
-        veterinaria.{"\n"}
-      </Text>
-    </ScrollView>
+        {/* 💊 Desparasitación */}
+        <Text style={styles.section}>💊 Calendario de Desparasitación</Text>
+        <ScrollView horizontal>
+          <View style={[styles.table, { width: COLUMN_WIDTH * 3 }]}>
+            <View style={styles.rowHeader}>
+              <CellHeader>Tipo</CellHeader>
+              <CellHeader>Frecuencia</CellHeader>
+              <CellHeader>Comentarios</CellHeader>
+            </View>
+
+            <View style={[styles.row, { backgroundColor: "#ffe5b4" }]}>
+              <Cell>Interna</Cell>
+              <Cell>Cada 3 meses</Cell>
+              <Cell>Contra lombrices y giardia (oral)</Cell>
+            </View>
+
+            <View style={[styles.row, { backgroundColor: "#d0f0c0" }]}>
+              <Cell>Externa</Cell>
+              <Cell>Cada 1-2 meses</Cell>
+              <Cell>Baños antiparasitarios o polvos</Cell>
+            </View>
+
+            <View style={[styles.row, { backgroundColor: "#f8d7da" }]}>
+              <Cell>Revisión clínica</Cell>
+              <Cell>Cada 6 meses</Cell>
+              <Cell>Detectar ácaros de sacos aéreos</Cell>
+            </View>
+          </View>
+        </ScrollView>
+
+        {/* 📚 Abreviaturas */}
+        <Text style={styles.section}>📚 Abreviaturas comunes</Text>
+        <ScrollView horizontal>
+          <View style={[styles.table, { width: COLUMN_WIDTH * 2, marginBottom: 70 }]}>
+            <View style={styles.rowHeader}>
+              <CellHeader>Sigla</CellHeader>
+              <CellHeader>Significado</CellHeader>
+            </View>
+
+            <View style={[styles.row, { backgroundColor: "#d0f0c0" }]}>
+              <Cell>PMV</Cell>
+              <Cell>Paramixovirus</Cell>
+            </View>
+
+            <View style={[styles.row, { backgroundColor: "#ffe5b4" }]}>
+              <Cell>CIRCO</Cell>
+              <Cell>Circovirus aviar</Cell>
+            </View>
+
+            <View style={[styles.row, { backgroundColor: "#f8d7da" }]}>
+              <Cell>VA</Cell>
+              <Cell>Viruela aviar</Cell>
+            </View>
+
+            <View style={[styles.row, { backgroundColor: "#d0f0c0" }]}>
+              <Cell>NEW</Cell>
+              <Cell>Enfermedad de Newcastle</Cell>
+            </View>
+          </View>
+        </ScrollView>
+      </ScrollView>
+
+      {/* 👇 Menú inferior */}
+      <Menu activeTab={activeTab} onTabPress={handleTabPress} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    padding: 20,
+  container: { flex: 1, backgroundColor: "#f9f9f9", padding: 15 },
+  title: { fontSize: 26, fontWeight: "bold", textAlign: "center", marginVertical: 10 },
+  subtitle: { fontSize: 18, textAlign: "center", marginBottom: 15, fontWeight: "600" },
+  paragraph: { fontSize: 16, lineHeight: 22, marginBottom: 20, textAlign: "justify", color: "#333" },
+  bold: { fontWeight: "700" },
+  section: { fontSize: 20, fontWeight: "700", marginVertical: 12, color: "#333" },
+  table: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 6,
   },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  rowHeader: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderColor: "#ccc",
   },
-  title: {
-    fontFamily: "Poppins_Bold",
-    fontSize: 28,
+  row: {
+    flexDirection: "row",
+    borderTopWidth: 1,
+    borderColor: "#ccc",
+  },
+  cellHeader: {
+    padding: 10,
     textAlign: "center",
-    marginBottom: 20,
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#000",
+    borderRightWidth: 1,
+    borderColor: "#ccc",
+    backgroundColor: "#d9e3f0",
   },
-  sectionTitle: {
-    fontFamily: "Poppins_Bold",
-    fontSize: 22,
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  text: {
-    fontFamily: "Poppins_Regular",
-    fontSize: 16,
-    lineHeight: 24,
-    textAlign: "justify",
-  },
-  image: {
-    width: "100%",
-    height: 200,
-    borderRadius: 12,
-    marginBottom: 15,
+  cell: {
+    padding: 10,
+    textAlign: "center",
+    fontSize: 13,
+    borderRightWidth: 1,
+    borderColor: "#ccc",
   },
 });

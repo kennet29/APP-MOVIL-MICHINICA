@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Platform, StatusBar } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  SafeAreaView,
+  Platform,
+  StatusBar,
+} from 'react-native';
 import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 
@@ -24,13 +33,15 @@ export default function Guia({ navigation }: any) {
     navigation.navigate(tab);
   };
 
+  // 🔹 Lista de animales y sus rutas
   const animals = [
-    { name: 'Perro', icon: <MaterialCommunityIcons name="dog" size={40} color="#fff" />, color: '#f49953' },
-    { name: 'Gato', icon: <MaterialCommunityIcons name="cat" size={40} color="#fff" />, color: '#9d7bb6' },
-    { name: 'Pájaro', icon: <FontAwesome5 name="crow" size={40} color="#fff" />, color: '#00BFFF' },
-    { name: 'Conejo', icon: <MaterialCommunityIcons name="rabbit" size={40} color="#fff" />, color: '#e87170' },
-    { name: 'Hámster', icon: <MaterialCommunityIcons name="rodent" size={40} color="#fff" />, color: '#FFA500' },
-    { name: 'Tortuga', icon: <MaterialCommunityIcons name="turtle" size={40} color="#fff" />, color: '#28a745' },
+    { name: 'Perro', route: 'VacunasPerros', icon: <MaterialCommunityIcons name="dog" size={40} color="#fff" />, color: '#f49953' },
+    { name: 'Gato', route: 'VacunasGatos', icon: <MaterialCommunityIcons name="cat" size={40} color="#fff" />, color: '#9d7bb6' },
+    { name: 'Pájaro', route: 'VacunasAves', icon: <FontAwesome5 name="crow" size={40} color="#fff" />, color: '#00BFFF' },
+    { name: 'Psitácidos', route: 'PsitacidosMexicanos', icon: <FontAwesome5 name="kiwi-bird" size={40} color="#fff" />, color: '#28a745' },
+    { name: 'Conejo', route: 'Conejos', icon: <MaterialCommunityIcons name="rabbit" size={40} color="#fff" />, color: '#e87170' },
+    { name: 'Hámster', route: 'Hamsters', icon: <MaterialCommunityIcons name="rodent" size={40} color="#fff" />, color: '#FFA500' },
+    { name: 'Tortuga', route: 'Tortugas', icon: <MaterialCommunityIcons name="turtle" size={40} color="#fff" />, color: '#28a745' },
   ];
 
   return (
@@ -38,12 +49,14 @@ export default function Guia({ navigation }: any) {
       <StatusBar hidden={true} />
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Guía de Animales Domésticos</Text>
+
+        {/* 🔹 Tarjetas de animales */}
         <View style={styles.cardsContainer}>
           {animals.map((animal, index) => (
             <TouchableOpacity
               key={index}
               style={[styles.card, { backgroundColor: animal.color }]}
-              onPress={() => console.log(`Card ${animal.name} presionada`)}
+              onPress={() => navigation.navigate(animal.route)}
             >
               {animal.icon}
               <Text style={styles.cardText}>{animal.name}</Text>
@@ -52,7 +65,7 @@ export default function Guia({ navigation }: any) {
         </View>
       </ScrollView>
 
-      {/* Menú inferior flotante transparente */}
+      {/* 🔹 Menú inferior */}
       <View style={styles.bottomMenu}>
         <TouchableOpacity onPress={() => handleTabPress('Home')} style={styles.menuItem}>
           <FontAwesome5 name="home" size={24} color={activeTab === 'Home' ? '#1DB954' : '#fff'} />

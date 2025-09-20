@@ -1,141 +1,207 @@
-// screens/GuiaGato.tsx
-import React from "react";
-import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
-import {
-  useFonts,
-  Poppins_400Regular,
-  Poppins_700Bold,
-} from "@expo-google-fonts/poppins";
+import React, { useState } from "react";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { useFonts, Poppins_400Regular, Poppins_700Bold } from "@expo-google-fonts/poppins";
+import Menu from "./Menu";
 
-export default function GuiaGato() {
+export default function VacunasGatos({ navigation }: any) {
+  const [activeTab, setActiveTab] = useState<
+    "Home" | "Profile" | "Mascota" | "MisionVision"
+  >("Mascota");
+
+  const handleTabPress = (tab: "Home" | "Profile" | "Mascota" | "MisionVision") => {
+    setActiveTab(tab);
+  };
+
   const [fontsLoaded] = useFonts({
     Poppins_Regular: Poppins_400Regular,
     Poppins_Bold: Poppins_700Bold,
   });
 
-  if (!fontsLoaded) {
-    return (
-      <View style={styles.center}>
-        <Text>Cargando...</Text>
-      </View>
-    );
-  }
+  const COLUMN_WIDTH = 180;
+
+  const CellHeader = ({ children }: any) => (
+    <Text style={[styles.cellHeader, { width: COLUMN_WIDTH }]}>{children}</Text>
+  );
+  const Cell = ({ children }: any) => (
+    <Text style={[styles.cell, { width: COLUMN_WIDTH }]}>{children}</Text>
+  );
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Guía Completa de Gatos</Text>
+    <View style={{ flex: 1 }}>
+      <ScrollView style={styles.container}>
+        <Text style={styles.title}>Guía de Vacunación y Desparasitación en Gatos 🐱</Text>
 
-      <Image
-        source={{ uri: "https://placekitten.com/800/400" }}
-        style={styles.image}
-      />
+        <Text style={styles.paragraph}>
+          Los gatos, tanto domésticos como de exterior, necesitan un esquema de
+          vacunación y desparasitación para prevenir enfermedades como{" "}
+          <Text style={styles.bold}>rabia, leucemia felina, panleucopenia</Text> y
+          otras enfermedades virales. Aquí encontrarás el calendario recomendado.
+        </Text>
 
-      <Text style={styles.sectionTitle}>🐱 Introducción</Text>
-      <Text style={styles.text}>
-        Los gatos son una de las mascotas más populares del mundo. Su carácter
-        independiente, su elegancia y su capacidad de adaptarse tanto a espacios
-        pequeños como grandes los convierten en compañeros ideales. Cuidar de un
-        gato implica entender sus necesidades físicas, emocionales y sociales.
-      </Text>
+        {/* 📋 Vacunación */}
+        <Text style={styles.section}>📋 Calendario de Vacunación</Text>
+        <ScrollView horizontal>
+          <View style={[styles.table, { width: COLUMN_WIDTH * 3 }]}>
+            <View style={styles.rowHeader}>
+              <CellHeader>Vacuna</CellHeader>
+              <CellHeader>Primovacunación</CellHeader>
+              <CellHeader>Refuerzo</CellHeader>
+            </View>
 
-      <Text style={styles.sectionTitle}>🍽️ Alimentación</Text>
-      <Image
-        source={{ uri: "https://cdn.pixabay.com/photo/2017/01/06/19/15/cat-1950939_1280.jpg" }}
-        style={styles.image}
-      />
-      <Text style={styles.text}>
-        Los gatos son carnívoros estrictos. Su dieta debe estar basada en
-        proteínas animales de calidad. Es recomendable darles alimento balanceado
-        (pienso seco o húmedo) diseñado específicamente para gatos, ya que estos
-        productos contienen taurina, un aminoácido esencial para su salud. Evita
-        darles comida casera como chocolate, cebolla, ajo o huesos, ya que pueden
-        ser tóxicos.
-      </Text>
+            <View style={[styles.row, { backgroundColor: "#d0f0c0" }]}>
+              <Cell>Triple felina (HVF-1, PVF, CVF)</Cell>
+              <Cell>8-9 sem → cada 3-4 sem hasta 16-20 sem</Cell>
+              <Cell>Interior: cada 3 años {"\n"} Exterior: anual</Cell>
+            </View>
 
-      <Text style={styles.sectionTitle}>🏥 Salud y Cuidados</Text>
-      <Image
-        source={{ uri: "https://cdn.pixabay.com/photo/2016/02/19/11/19/cat-1209748_1280.jpg" }}
-        style={styles.image}
-      />
-      <Text style={styles.text}>
-        Es fundamental llevar a tu gato al veterinario de forma regular para
-        aplicar vacunas, desparasitación y revisiones. La esterilización es
-        recomendable para prevenir problemas de salud y evitar la sobrepoblación
-        felina. Además, los gatos necesitan revisiones dentales y cuidado de sus
-        uñas, que puedes mantener cortas con un rascador adecuado.
-      </Text>
+            <View style={[styles.row, { backgroundColor: "#ffe5b4" }]}>
+              <Cell>Rabia</Cell>
+              <Cell>12 sem</Cell>
+              <Cell>Anual (obligatoria en muchos países)</Cell>
+            </View>
 
-      <Text style={styles.sectionTitle}>🏡 Entorno y Bienestar</Text>
-      <Image
-        source={{ uri: "https://cdn.pixabay.com/photo/2016/11/29/05/08/adorable-1866475_1280.jpg" }}
-        style={styles.image}
-      />
-      <Text style={styles.text}>
-        Los gatos disfrutan de tener espacios donde trepar, esconderse y
-        observar. Un rascador, estantes o camas altas ayudan a que tu gato se
-        sienta seguro y estimulado. El arenero debe estar limpio y ubicado en un
-        lugar tranquilo. También es importante dedicar tiempo al juego diario con
-        juguetes interactivos para mantener su mente activa.
-      </Text>
+            <View style={[styles.row, { backgroundColor: "#f8d7da" }]}>
+              <Cell>Leucemia viral felina (LVF)</Cell>
+              <Cell>8-9 sem → 2 dosis con 3-4 sem de diferencia</Cell>
+              <Cell>Cachorros: anual {"\n"} Adultos: solo si hay riesgo</Cell>
+            </View>
 
-      <Text style={styles.sectionTitle}>❤️ Convivencia</Text>
-      <Image
-        source={{ uri: "https://cdn.pixabay.com/photo/2017/11/09/21/41/cat-2934720_1280.jpg" }}
-        style={styles.image}
-      />
-      <Text style={styles.text}>
-        Aunque los gatos son independientes, también necesitan cariño y
-        atención. Respetar su espacio y entender su lenguaje corporal (movimiento
-        de cola, orejas y maullidos) es esencial para una buena relación. Algunos
-        gatos disfrutan de la compañía constante, mientras que otros prefieren
-        momentos de soledad. La clave está en respetar sus tiempos.
-      </Text>
+            <View style={[styles.row, { backgroundColor: "#d0f0c0" }]}>
+              <Cell>Chlamydia felis</Cell>
+              <Cell>8-9 sem → 2 dosis con 3-4 sem de diferencia</Cell>
+              <Cell>Anual (colonias o criaderos)</Cell>
+            </View>
 
-      <Text style={styles.sectionTitle}>📌 Resumen</Text>
-      <Text style={styles.text}>
-        - Los gatos son carnívoros estrictos: aliméntalos con pienso de calidad.{"\n"}
-        - Necesitan revisiones veterinarias y vacunas regulares.{"\n"}
-        - Mantén un entorno limpio, con arenero y rascador.{"\n"}
-        - Juega con ellos a diario para estimularlos.{"\n"}
-        - Bríndales cariño y respeto por su espacio.{"\n"}
-      </Text>
-    </ScrollView>
+            <View style={[styles.row, { backgroundColor: "#ffe5b4" }]}>
+              <Cell>Virus de Inmunodeficiencia Felina (VIF)</Cell>
+              <Cell>8 sem → 3 dosis con 2-3 sem de diferencia</Cell>
+              <Cell>Anual si el gato tiene riesgo</Cell>
+            </View>
+          </View>
+        </ScrollView>
+
+        {/* 💊 Desparasitación */}
+        <Text style={styles.section}>💊 Calendario de Desparasitación</Text>
+        <ScrollView horizontal>
+          <View style={[styles.table, { width: COLUMN_WIDTH * 3 }]}>
+            <View style={styles.rowHeader}>
+              <CellHeader>Tipo</CellHeader>
+              <CellHeader>Frecuencia</CellHeader>
+              <CellHeader>Comentarios</CellHeader>
+            </View>
+
+            <View style={[styles.row, { backgroundColor: "#d0f0c0" }]}>
+              <Cell>Interna (lombrices, giardia, coccidios)</Cell>
+              <Cell>Gatitos: cada 15 días hasta 3 meses {"\n"} Adultos: cada 3-6 meses</Cell>
+              <Cell>Usar antiparasitarios de amplio espectro ajustados al peso</Cell>
+            </View>
+
+            <View style={[styles.row, { backgroundColor: "#ffe5b4" }]}>
+              <Cell>Externa (pulgas, garrapatas, ácaros)</Cell>
+              <Cell>Mensual</Cell>
+              <Cell>Pipetas, collares o comprimidos {"\n"} Refuerzo en época de calor</Cell>
+            </View>
+
+            <View style={[styles.row, { backgroundColor: "#f8d7da" }]}>
+              <Cell>Revisión veterinaria</Cell>
+              <Cell>Cada 6 meses</Cell>
+              <Cell>Para ajustar el esquema según estilo de vida</Cell>
+            </View>
+          </View>
+        </ScrollView>
+
+        {/* ⚠️ Efectos secundarios */}
+        <Text style={styles.section}>⚠️ Efectos secundarios posibles</Text>
+        <Text style={styles.paragraph}>
+          • Leves: inflamación local, fiebre baja, inapetencia, letargia. {"\n"}
+          • Graves (muy raros): anafilaxia, sarcomas posinyección, poliartritis. {"\n"}
+          • Recomendación: aplicar en miembros distales (no en zona interescapular).
+        </Text>
+
+        {/* 📚 Abreviaturas */}
+        <Text style={styles.section}>📚 Abreviaturas</Text>
+        <ScrollView horizontal>
+          <View style={[styles.table, { width: COLUMN_WIDTH * 2, marginBottom: 80 }]}>
+            <View style={styles.rowHeader}>
+              <CellHeader>Sigla</CellHeader>
+              <CellHeader>Significado</CellHeader>
+            </View>
+
+            <View style={[styles.row, { backgroundColor: "#d0f0c0" }]}>
+              <Cell>HVF-1</Cell>
+              <Cell>Herpesvirus felino tipo 1</Cell>
+            </View>
+            <View style={[styles.row, { backgroundColor: "#ffe5b4" }]}>
+              <Cell>CVF</Cell>
+              <Cell>Calicivirus felino</Cell>
+            </View>
+            <View style={[styles.row, { backgroundColor: "#f8d7da" }]}>
+              <Cell>PVF</Cell>
+              <Cell>Panleucopenia viral felina</Cell>
+            </View>
+            <View style={[styles.row, { backgroundColor: "#d0f0c0" }]}>
+              <Cell>LVF</Cell>
+              <Cell>Leucemia viral felina</Cell>
+            </View>
+            <View style={[styles.row, { backgroundColor: "#ffe5b4" }]}>
+              <Cell>VIF</Cell>
+              <Cell>Virus de Inmunodeficiencia Felina</Cell>
+            </View>
+            <View style={[styles.row, { backgroundColor: "#f8d7da" }]}>
+              <Cell>C. felis</Cell>
+              <Cell>Chlamydia felis</Cell>
+            </View>
+          </View>
+        </ScrollView>
+
+        {/* 🔘 Botón para ver razas */}
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("RazasGatos")}
+        >
+          <Text style={styles.buttonText}>🐾 Ver Razas de Gatos</Text>
+        </TouchableOpacity>
+      </ScrollView>
+
+      {/* 👇 Menú inferior */}
+      <Menu activeTab={activeTab} onTabPress={handleTabPress} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    padding: 20,
-  },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  title: {
-    fontFamily: "Poppins_Bold",
-    fontSize: 28,
+  container: { flex: 1, backgroundColor: "#f9f9f9", padding: 15 },
+  title: { fontSize: 26, fontWeight: "bold", textAlign: "center", marginVertical: 10 },
+  paragraph: { fontSize: 16, lineHeight: 22, marginBottom: 20, textAlign: "justify", color: "#333" },
+  bold: { fontWeight: "700" },
+  section: { fontSize: 20, fontWeight: "700", marginVertical: 12, color: "#333" },
+  table: { borderWidth: 1, borderColor: "#ccc", borderRadius: 6 },
+  rowHeader: { flexDirection: "row", borderBottomWidth: 1, borderColor: "#ccc" },
+  row: { flexDirection: "row", borderTopWidth: 1, borderColor: "#ccc" },
+  cellHeader: {
+    padding: 10,
     textAlign: "center",
-    marginBottom: 20,
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#000",
+    borderRightWidth: 1,
+    borderColor: "#ccc",
+    backgroundColor: "#d9e3f0",
   },
-  sectionTitle: {
-    fontFamily: "Poppins_Bold",
-    fontSize: 22,
+  cell: {
+    padding: 10,
+    textAlign: "center",
+    fontSize: 13,
+    borderRightWidth: 1,
+    borderColor: "#ccc",
+  },
+  button: {
+    backgroundColor: "#9d7bb6",
+    padding: 15,
+    borderRadius: 10,
     marginTop: 20,
-    marginBottom: 10,
+    alignItems: "center",
+    marginBottom: 90,
   },
-  text: {
-    fontFamily: "Poppins_Regular",
-    fontSize: 16,
-    lineHeight: 24,
-    textAlign: "justify",
-  },
-  image: {
-    width: "100%",
-    height: 200,
-    borderRadius: 12,
-    marginBottom: 15,
-  },
+  buttonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
 });
