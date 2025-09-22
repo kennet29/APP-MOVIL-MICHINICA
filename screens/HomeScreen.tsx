@@ -21,7 +21,10 @@ export default function HomeScreen({ navigation }: any) {
     Poppins_Bold: Poppins_700Bold,
   });
 
-  const [activeTab, setActiveTab] = useState<'Home' | 'Profile' | 'Mascota' | 'MisionVision'|'RedesSocialesScreen'>('Home');
+  const [activeTab, setActiveTab] = useState<
+  'Home' | 'Profile' | 'MisMascotas' | 'MisionVision' | 'RedesSocialesScreen'
+>('Home');
+
 
   const titleScale = useRef(new Animated.Value(0)).current;
   const cardsAnim = useRef([0, 1, 2, 3, 4].map(() => new Animated.Value(0))).current;
@@ -50,14 +53,19 @@ export default function HomeScreen({ navigation }: any) {
     );
   }
 
-  const handleTabPress = (tab: 'Home' | 'Profile' | 'Mascota' | 'MisionVision'|'RedesSocialesScreen') => {
+  const handleTabPress = (
+    tab: 'Home' | 'Profile' | 'MisMascotas' | 'MisionVision' | 'RedesSocialesScreen'
+  ) => {
     setActiveTab(tab);
-    navigation.navigate(tab);
+    navigation.navigate(tab as never); // 👈 o mejor tiparlo con RootStackParamList si quieres typescript estricto
   };
+  
 
   const handleCardPress = (cardName: string) => {
     if (cardName === 'GUIAS') {
       navigation.navigate('Guia');
+    } else if (cardName === 'MASCOTAS PERDIDAS') {
+      navigation.navigate('MascotasPerdidas'); // 👈 aquí redirige a tu vista de mascotas
     } else {
       console.log(`Card ${cardName} presionada`);
     }
@@ -130,25 +138,25 @@ export default function HomeScreen({ navigation }: any) {
 
         {/* 🔽 Menú inferior actualizado con Misión y Visión */}
         <View style={styles.bottomMenu}>
-  <TouchableOpacity onPress={() => handleTabPress('Home')} style={styles.menuItem}>
-    <FontAwesome5 name="home" size={24} color={activeTab === 'Home' ? '#1DB954' : '#fff'} />
-  </TouchableOpacity>
-  <TouchableOpacity onPress={() => handleTabPress('Profile')} style={styles.menuItem}>
-    <FontAwesome5 name="user" size={24} color={activeTab === 'Profile' ? '#1DB954' : '#fff'} />
-  </TouchableOpacity>
-  <TouchableOpacity onPress={() => handleTabPress('Mascota')} style={styles.menuItem}>
-    <MaterialCommunityIcons name="dog" size={28} color={activeTab === 'Mascota' ? '#1DB954' : '#fff'} />
-  </TouchableOpacity>
-  <TouchableOpacity onPress={() => handleTabPress('MisionVision')} style={styles.menuItem}>
-    <FontAwesome5 name="info-circle" size={24} color={activeTab === 'MisionVision' ? '#1DB954' : '#fff'} />
-  </TouchableOpacity>
-  {/* Nuevo botón Redes Sociales */}
-  <TouchableOpacity onPress={() => handleTabPress('RedesSocialesScreen')} style={styles.menuItem}>
-    <FontAwesome5 name="share-alt" size={24} color={activeTab === 'RedesSocialesScreen' ? '#1DB954' : '#fff'} />
-  </TouchableOpacity>
-</View>
+          <TouchableOpacity onPress={() => handleTabPress('Home')} style={styles.menuItem}>
+            <FontAwesome5 name="home" size={24} color={activeTab === 'Home' ? '#1DB954' : '#fff'} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleTabPress('Profile')} style={styles.menuItem}>
+            <FontAwesome5 name="user" size={24} color={activeTab === 'Profile' ? '#1DB954' : '#fff'} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleTabPress('MisMascotas')} style={styles.menuItem}>
+  <MaterialCommunityIcons name="dog" size={28} color={activeTab === 'MisMascotas' ? '#1DB954' : '#fff'} />
+</TouchableOpacity>
 
 
+          <TouchableOpacity onPress={() => handleTabPress('MisionVision')} style={styles.menuItem}>
+            <FontAwesome5 name="info-circle" size={24} color={activeTab === 'MisionVision' ? '#1DB954' : '#fff'} />
+          </TouchableOpacity>
+          {/* Nuevo botón Redes Sociales */}
+          <TouchableOpacity onPress={() => handleTabPress('RedesSocialesScreen')} style={styles.menuItem}>
+            <FontAwesome5 name="share-alt" size={24} color={activeTab === 'RedesSocialesScreen' ? '#1DB954' : '#fff'} />
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     </>
   );
