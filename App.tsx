@@ -1,8 +1,9 @@
+// App.tsx
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-// 🔹 Tus imports existentes
+// 🔹 Imports de pantallas
 import RazasPerros from "./screens/RazasPerros";
 import RazasGatos from "./screens/RazasGatos";
 import MascotasPerdidas from "./screens/MascotaPerdida";
@@ -20,9 +21,10 @@ import MisionVision from "./screens/MisionVision";
 import RedesSocialesScreen from "./screens/Redes";
 import CrearMascotaPerdida from "./screens/CrearMascotaPerdida";
 
-// 🆕 Nuestras nuevas vistas
-import MisMascotas from "./screens/CrearMascotas";
+// 🆕 Nuevas vistas
+import MisMascotas from "./screens/Mascota"; 
 import HistorialMedicoMascota from "./screens/HistorialMedicoMascota";
+import CrearMascota from "./screens/CrearMascotas"; 
 
 // 📌 Definición de tipos de navegación
 export type RootStackParamList = {
@@ -30,7 +32,6 @@ export type RootStackParamList = {
   Register: undefined;
   Home: undefined;
   Profile: undefined;
-  Mascota: undefined;
   Guia: undefined;
   VacunasPerros: undefined;
   VacunasGatos: undefined;
@@ -47,6 +48,7 @@ export type RootStackParamList = {
   // 🆕 vistas nuevas
   MisMascotas: undefined;
   HistorialMedicoMascota: { mascotaId: string };
+  CrearMascota: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -55,12 +57,13 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
+        {/* Login y Registro */}
         <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
         <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
 
+        {/* Pantallas principales */}
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Mascota" component={ProfileScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Guia" component={Guia} options={{ headerShown: false }} />
 
         {/* Animales */}
@@ -81,6 +84,7 @@ export default function App() {
         {/* 🆕 Vistas nuevas */}
         <Stack.Screen name="MisMascotas" component={MisMascotas} options={{ headerShown: false }} />
         <Stack.Screen name="HistorialMedicoMascota" component={HistorialMedicoMascota} options={{ headerShown: false }} />
+        <Stack.Screen name="CrearMascota" component={CrearMascota} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

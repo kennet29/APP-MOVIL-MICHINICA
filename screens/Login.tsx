@@ -23,22 +23,9 @@ export default function Login({ navigation }: any) {
     Poppins_Bold: Poppins_700Bold,
   });
 
-  // --- Verificar token al iniciar ---
+  // 👉 Ahora SIEMPRE se muestra el login primero
   useEffect(() => {
-    const checkToken = async () => {
-      try {
-        const token = await AsyncStorage.getItem("userToken");
-        if (token) {
-          // Si existe token, navegamos directamente a Home
-          navigation.replace("Home");
-        }
-      } catch (error) {
-        console.error("Error al verificar token:", error);
-      } finally {
-        setCheckingToken(false);
-      }
-    };
-    checkToken();
+    setCheckingToken(false);
   }, []);
 
   if (!fontsLoaded || checkingToken) {
@@ -75,7 +62,7 @@ export default function Login({ navigation }: any) {
         if (data.token) {
           await AsyncStorage.setItem("userToken", data.token);
           await AsyncStorage.setItem("userEmail", email);
-          console.log("Token guardado:", data.token);
+          console.log("✅ Token guardado:", data.token);
         }
 
         Alert.alert("Éxito", "Inicio de sesión correcto");
