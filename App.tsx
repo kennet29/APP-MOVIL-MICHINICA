@@ -22,11 +22,15 @@ import RedesSocialesScreen from "./screens/Redes";
 import CrearMascotaPerdida from "./screens/CrearMascotaPerdida";
 
 // 🆕 Nuevas vistas
-import MisMascotas from "./screens/Mascota"; 
+import MisMascotas from "./screens/Mascotas"; 
 import HistorialMedicoMascota from "./screens/HistorialMedicoMascota";
 import CrearMascota from "./screens/CrearMascotas"; 
+import Notificaciones from "./screens/Notificaciones";
 
-// 📌 Definición de tipos de navegación
+// 🆕 Pantalla de peces
+import TratamientoPeces from "./screens/Peces";
+import DatosPeces from "./screens/DatosPeces";
+
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
@@ -44,11 +48,18 @@ export type RootStackParamList = {
   RazasPerros: undefined;
   MascotasPerdidas: undefined;
   CrearMascotaPerdida: undefined;
+  DatosPeces: undefined;
 
   // 🆕 vistas nuevas
   MisMascotas: undefined;
   HistorialMedicoMascota: { mascotaId: string };
   CrearMascota: undefined;
+
+  // 🆕 agregar Notificaciones
+  Notificaciones: undefined;
+
+  // 🆕 agregar peces
+  Peces: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -74,6 +85,10 @@ export default function App() {
         <Stack.Screen name="Conejos" component={GuiaConejos} options={{ headerShown: false }} />
         <Stack.Screen name="Tortugas" component={GuiaTortugas} options={{ headerShown: false }} />
 
+        {/* 🐟 Peces */}
+        <Stack.Screen name="Peces" component={TratamientoPeces} options={{ headerShown: false }} />
+        <Stack.Screen name="DatosPeces" component={DatosPeces} options={{ headerShown: false }} />
+
         {/* Extras */}
         <Stack.Screen name="MisionVision" component={MisionVision} options={{ headerShown: false }} />
         <Stack.Screen name="RedesSocialesScreen" component={RedesSocialesScreen} options={{ headerShown: false }} />
@@ -85,6 +100,7 @@ export default function App() {
         <Stack.Screen name="MisMascotas" component={MisMascotas} options={{ headerShown: false }} />
         <Stack.Screen name="HistorialMedicoMascota" component={HistorialMedicoMascota} options={{ headerShown: false }} />
         <Stack.Screen name="CrearMascota" component={CrearMascota} options={{ headerShown: false }} />
+        <Stack.Screen name="Notificaciones" component={Notificaciones} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -10,10 +10,11 @@ import {
   StatusBar,
   ActivityIndicator,
   Animated,
-} from 'react-native';
-import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
-import * as NavigationBar from 'expo-navigation-bar';
+} from "react-native";
+import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useFonts, Poppins_400Regular, Poppins_700Bold } from "@expo-google-fonts/poppins";
+import * as NavigationBar from "expo-navigation-bar";
+import BottomMenu from "./Menu";
 
 export default function HomeScreen({ navigation }: any) {
   const [fontsLoaded] = useFonts({
@@ -22,20 +23,24 @@ export default function HomeScreen({ navigation }: any) {
   });
 
   const [activeTab, setActiveTab] = useState<
-  'Home' | 'Profile' | 'MisMascotas' | 'MisionVision' | 'RedesSocialesScreen'
->('Home');
-
+    "Home" | "Profile" | "Mascotas" | "MisionVision" | "Notificaciones"
+  >("Home");
 
   const titleScale = useRef(new Animated.Value(0)).current;
   const cardsAnim = useRef([0, 1, 2, 3, 4].map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
-    if (Platform.OS === 'android') {
-      NavigationBar.setVisibilityAsync('hidden');
-      NavigationBar.setBackgroundColorAsync('transparent');
+    if (Platform.OS === "android") {
+      NavigationBar.setVisibilityAsync("hidden");
+      NavigationBar.setBackgroundColorAsync("transparent");
     }
 
-    Animated.spring(titleScale, { toValue: 1, useNativeDriver: true, friction: 5, tension: 80 }).start();
+    Animated.spring(titleScale, {
+      toValue: 1,
+      useNativeDriver: true,
+      friction: 5,
+      tension: 80,
+    }).start();
 
     Animated.stagger(
       200,
@@ -47,48 +52,49 @@ export default function HomeScreen({ navigation }: any) {
 
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#329bd7' }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#329bd7" }}>
         <ActivityIndicator size="large" color="#fff" />
       </View>
     );
   }
 
-  const handleTabPress = (
-    tab: 'Home' | 'Profile' | 'MisMascotas' | 'MisionVision' | 'RedesSocialesScreen'
-  ) => {
+  const handleTabPress = (tab: "Home" | "Profile" | "Mascotas" | "MisionVision" | "Notificaciones") => {
     setActiveTab(tab);
-    navigation.navigate(tab as never); // 👈 o mejor tiparlo con RootStackParamList si quieres typescript estricto
+    navigation.navigate(tab as never);
   };
-  
 
   const handleCardPress = (cardName: string) => {
-    if (cardName === 'GUIAS') {
-      navigation.navigate('Guia');
-    } else if (cardName === 'MASCOTAS PERDIDAS') {
-      navigation.navigate('MascotasPerdidas'); // 👈 aquí redirige a tu vista de mascotas
+    if (cardName === "GUIAS") {
+      navigation.navigate("Guia");
+    } else if (cardName === "MASCOTAS PERDIDAS") {
+      navigation.navigate("MascotasPerdidas");
     } else {
       console.log(`Card ${cardName} presionada`);
     }
   };
 
-  const cardColors = ['#e87170', '#f49953', '#9d7bb6', '#00BFFF', '#FFA500'];
+  const cardColors = ["#e87170", "#f49953", "#9d7bb6", "#00BFFF", "#FFA500"];
 
   const cardData = [
-    { name: 'POST', color: cardColors[0], icon: <FontAwesome5 name="edit" size={28} color="#fff" /> },
-    { name: 'MASCOTAS PERDIDAS', color: cardColors[1], icon: <MaterialCommunityIcons name="dog" size={28} color="#fff" /> },
-    { name: 'ADOPCIÓN', color: cardColors[2], icon: <FontAwesome5 name="heart" size={28} color="#fff" /> },
-    { name: 'EVENTOS', color: cardColors[3], icon: <FontAwesome5 name="calendar-alt" size={28} color="#fff" /> },
-    { name: 'GUIAS', color: cardColors[4], icon: <FontAwesome5 name="book" size={28} color="#fff" /> },
+    { name: "POST", color: cardColors[0], icon: <FontAwesome5 name="edit" size={28} color="#fff" /> },
+    {
+      name: "MASCOTAS PERDIDAS",
+      color: cardColors[1],
+      icon: <MaterialCommunityIcons name="dog" size={28} color="#fff" />,
+    },
+    { name: "ADOPCIÓN", color: cardColors[2], icon: <FontAwesome5 name="heart" size={28} color="#fff" /> },
+    { name: "EVENTOS", color: cardColors[3], icon: <FontAwesome5 name="calendar-alt" size={28} color="#fff" /> },
+    { name: "GUIAS", color: cardColors[4], icon: <FontAwesome5 name="book" size={28} color="#fff" /> },
   ];
 
   const titleLetters = [
-    { letter: 'Z', color: cardColors[0] },
-    { letter: 'O', color: cardColors[1] },
-    { letter: 'Ó', color: cardColors[2] },
-    { letter: 'N', color: '#00BFFF' },
-    { letter: 'I', color: '#00BFFF' },
-    { letter: 'C', color: '#00BFFF' },
-    { letter: 'A', color: '#00BFFF' },
+    { letter: "Z", color: cardColors[0] },
+    { letter: "O", color: cardColors[1] },
+    { letter: "Ó", color: cardColors[2] },
+    { letter: "N", color: "#00BFFF" },
+    { letter: "I", color: "#00BFFF" },
+    { letter: "C", color: "#00BFFF" },
+    { letter: "A", color: "#00BFFF" },
   ];
 
   return (
@@ -96,7 +102,7 @@ export default function HomeScreen({ navigation }: any) {
       <StatusBar hidden />
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.content}>
-          <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 20 }}>
+          <View style={{ flexDirection: "row", justifyContent: "center", marginBottom: 20 }}>
             {titleLetters.map((item, index) => (
               <Animated.Text
                 key={index}
@@ -136,67 +142,30 @@ export default function HomeScreen({ navigation }: any) {
           </View>
         </ScrollView>
 
-        {/* 🔽 Menú inferior actualizado con Misión y Visión */}
-        <View style={styles.bottomMenu}>
-          <TouchableOpacity onPress={() => handleTabPress('Home')} style={styles.menuItem}>
-            <FontAwesome5 name="home" size={24} color={activeTab === 'Home' ? '#1DB954' : '#fff'} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleTabPress('Profile')} style={styles.menuItem}>
-            <FontAwesome5 name="user" size={24} color={activeTab === 'Profile' ? '#1DB954' : '#fff'} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleTabPress('MisMascotas')} style={styles.menuItem}>
-  <MaterialCommunityIcons name="dog" size={28} color={activeTab === 'MisMascotas' ? '#1DB954' : '#fff'} />
-</TouchableOpacity>
-
-
-          <TouchableOpacity onPress={() => handleTabPress('MisionVision')} style={styles.menuItem}>
-            <FontAwesome5 name="info-circle" size={24} color={activeTab === 'MisionVision' ? '#1DB954' : '#fff'} />
-          </TouchableOpacity>
-          {/* Nuevo botón Redes Sociales */}
-          <TouchableOpacity onPress={() => handleTabPress('RedesSocialesScreen')} style={styles.menuItem}>
-            <FontAwesome5 name="share-alt" size={24} color={activeTab === 'RedesSocialesScreen' ? '#1DB954' : '#fff'} />
-          </TouchableOpacity>
-        </View>
+        {/* 👇 Aquí se usa el componente BottomMenu */}
+        <BottomMenu activeTab={activeTab} onTabPress={handleTabPress} />
       </SafeAreaView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FFFF' },
+  safeArea: { flex: 1, backgroundColor: "#FFFF" },
   content: { padding: 20, paddingTop: 60, paddingBottom: 120 },
-  title: { fontSize: 40, marginBottom: 20, textAlign: 'center', fontFamily: 'Poppins_Bold' },
-  cardsContainer: { flexDirection: 'column', justifyContent: 'flex-start' },
+  title: { fontSize: 40, marginBottom: 20, textAlign: "center", fontFamily: "Poppins_Bold" },
+  cardsContainer: { flexDirection: "column", justifyContent: "flex-start" },
   card: {
-    width: '100%',
+    width: "100%",
     borderRadius: 12,
     padding: 20,
     marginBottom: 15,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
-    alignItems: 'center',
+    alignItems: "center",
   },
-  cardTitle: { fontSize: 18, marginTop: 10, fontFamily: 'Poppins_Bold', color: '#fff', textAlign: 'center' },
-  cardText: { fontFamily: 'Poppins_Regular', color: '#fff', textAlign: 'center' },
-  bottomMenu: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 25 : 25,
-    width: '90%',
-    marginHorizontal: '5%',
-    height: 60,
-    backgroundColor: Platform.OS === 'android' ? 'rgba(30,30,30,0.6)' : '#1e1e1e',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    borderRadius: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 5,
-    elevation: 8,
-  },
-  menuItem: { alignItems: 'center', justifyContent: 'center' },
+  cardTitle: { fontSize: 18, marginTop: 10, fontFamily: "Poppins_Bold", color: "#fff", textAlign: "center" },
+  cardText: { fontFamily: "Poppins_Regular", color: "#fff", textAlign: "center" },
 });

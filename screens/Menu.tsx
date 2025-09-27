@@ -3,14 +3,15 @@ import { View, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface BottomMenuProps {
-  activeTab: "Home" | "Profile" | "Mascota" | "MisionVision";
-  onTabPress: (tab: "Home" | "Profile" | "Mascota" | "MisionVision") => void;
+  activeTab: "Home" | "Profile" | "Mascotas" | "MisionVision" | "Notificaciones";
+  onTabPress: (
+    tab: "Home" | "Profile" | "Mascotas" | "MisionVision" | "Notificaciones"
+  ) => void;
 }
 
 export default function BottomMenu({ activeTab, onTabPress }: BottomMenuProps) {
   return (
     <View style={styles.bottomMenu}>
-      {/* Home */}
       <TouchableOpacity onPress={() => onTabPress("Home")} style={styles.menuItem}>
         <FontAwesome5
           name="home"
@@ -19,8 +20,10 @@ export default function BottomMenu({ activeTab, onTabPress }: BottomMenuProps) {
         />
       </TouchableOpacity>
 
-      {/* Profile */}
-      <TouchableOpacity onPress={() => onTabPress("Profile")} style={styles.menuItem}>
+      <TouchableOpacity
+        onPress={() => onTabPress("Profile")}
+        style={styles.menuItem}
+      >
         <FontAwesome5
           name="user"
           size={24}
@@ -28,17 +31,33 @@ export default function BottomMenu({ activeTab, onTabPress }: BottomMenuProps) {
         />
       </TouchableOpacity>
 
-      {/* Mascota */}
-      <TouchableOpacity onPress={() => onTabPress("Mascota")} style={styles.menuItem}>
+
+      <TouchableOpacity
+        onPress={() => onTabPress("Mascotas")}
+        style={styles.menuItem}
+      >
         <MaterialCommunityIcons
           name="dog"
           size={28}
-          color={activeTab === "Mascota" ? "#1DB954" : "#fff"}
+          color={activeTab === "Mascotas" ? "#1DB954" : "#fff"}
         />
       </TouchableOpacity>
 
-      {/* Misión y Visión */}
-      <TouchableOpacity onPress={() => onTabPress("MisionVision")} style={styles.menuItem}>
+      <TouchableOpacity
+        onPress={() => onTabPress("Notificaciones")}
+        style={styles.menuItem}
+      >
+        <FontAwesome5
+          name="bell"
+          size={24}
+          color={activeTab === "Notificaciones" ? "#1DB954" : "#fff"}
+        />
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => onTabPress("MisionVision")}
+        style={styles.menuItem}
+      >
         <MaterialCommunityIcons
           name="heart-pulse"
           size={28}
@@ -56,7 +75,8 @@ const styles = StyleSheet.create({
     width: "90%",
     marginHorizontal: "5%",
     height: 60,
-    backgroundColor: Platform.OS === "android" ? "rgba(30,30,30,0.6)" : "#1e1e1e",
+    backgroundColor:
+      Platform.OS === "android" ? "rgba(30,30,30,0.6)" : "#1e1e1e",
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",

@@ -1,17 +1,22 @@
 // screens/GuiaConejos.tsx
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
 import {
   useFonts,
   Poppins_400Regular,
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
+import BottomMenu from "./Menu";
 
-export default function GuiaConejos() {
+export default function GuiaConejos({ navigation }: any) {
   const [fontsLoaded] = useFonts({
     Poppins_Regular: Poppins_400Regular,
     Poppins_Bold: Poppins_700Bold,
   });
+
+  const [activeTab, setActiveTab] = useState<
+    "Home" | "Profile" | "Mascotas" | "MisionVision" | "Notificaciones"
+  >("Mascotas");
 
   if (!fontsLoaded) {
     return (
@@ -21,130 +26,210 @@ export default function GuiaConejos() {
     );
   }
 
+  const handleTabPress = (
+    tab: "Home" | "Profile" | "Mascotas" | "MisionVision" | "Notificaciones"
+  ) => {
+    setActiveTab(tab);
+    navigation.navigate(tab);
+  };
+
+  const COLUMN_WIDTH = 140;
+  const CellHeader = ({ children }: any) => (
+    <Text style={[styles.cellHeader, { width: COLUMN_WIDTH }]}>{children}</Text>
+  );
+  const Cell = ({ children }: any) => (
+    <Text style={[styles.cell, { width: COLUMN_WIDTH }]}>{children}</Text>
+  );
+
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Guía Completa de Conejos Domésticos</Text>
+    <View style={{ flex: 1 }}>
+      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
+        <Text style={styles.title}>Guía Completa de Conejos Domésticos</Text>
 
-      <Image
-        source={{
-          uri: "https://cdn.pixabay.com/photo/2017/05/31/19/46/rabbit-2362214_1280.jpg",
-        }}
-        style={styles.image}
-      />
 
-      <Text style={styles.sectionTitle}>🐇 Introducción</Text>
-      <Text style={styles.text}>
-        Los conejos son animales dóciles, tiernos y muy inteligentes que cada vez
-        son más populares como mascotas. Viven en promedio entre 8 y 12 años, y
-        requieren cuidados específicos de alimentación, espacio y salud para
-        mantenerse felices y activos.
-      </Text>
+        <Image
+  source={require("./Conejo.jpg")}
+  style={styles.image}
+  resizeMode="cover"
+/>
 
-      <Text style={styles.sectionTitle}>🌿 Razas Comunes de Conejos</Text>
-      <Text style={styles.text}>
-        - **Conejo enano (Netherland Dwarf)**: pequeño, activo y juguetón.{"\n"}
-        - **Belier**: orejas largas caídas, tranquilo y sociable.{"\n"}
-        - **Conejo Rex**: pelo corto y suave, tamaño mediano.{"\n"}
-        - **Conejo Angora**: pelaje largo, requiere mucho cepillado.{"\n"}
-      </Text>
 
-      <Image
-        source={{
-          uri: "https://cdn.pixabay.com/photo/2018/04/17/20/27/rabbit-3329725_1280.jpg",
-        }}
-        style={styles.image}
-      />
+        {/* Introducción */}
+        <Text style={styles.sectionTitle}>🐇 Introducción</Text>
+        <Text style={styles.text}>
+          Los conejos son animales dóciles, tiernos y muy inteligentes que cada vez son más populares como mascotas...
+        </Text>
 
-      <Text style={styles.sectionTitle}>🥕 Alimentación</Text>
-      <Text style={styles.text}>
-        La dieta del conejo debe estar basada en:{"\n\n"}
-        ✅ **Heno** (80% de su dieta, siempre disponible).{"\n"}
-        ✅ **Verduras frescas** como zanahoria, lechuga romana, acelga, espinaca,
-        apio.{"\n"}
-        ✅ **Pellets de calidad** en pequeñas cantidades.{"\n"}
-        ✅ **Frutas** (manzana, fresa, plátano) solo como premios ocasionales.{"\n"}
-        🚫 Evita pan, dulces, lácteos o alimentos procesados.{"\n"}
-      </Text>
+        {/* Alimentación */}
+        <Text style={styles.sectionTitle}>🥕 Alimentación</Text>
+        <Text style={styles.text}>
+          La dieta del conejo debe estar basada en heno, verduras frescas, pellets de calidad y frutas como premio ocasional.
+        </Text>
 
-      <Text style={styles.sectionTitle}>🏡 Hábitat y Espacio</Text>
-      <Text style={styles.text}>
-        - Necesitan un **espacio amplio** para moverse, saltar y ejercitarse.{"\n"}
-        - La jaula debe ser grande, con un piso sólido (no de rejilla) para evitar
-        lesiones en sus patas.{"\n"}
-        - Coloca **escondites** y juguetes para su entretenimiento.{"\n"}
-        - Pueden vivir libres en casa, pero se debe asegurar el ambiente (proteger
-        cables, plantas tóxicas, objetos frágiles).{"\n"}
-      </Text>
+        {/* Tabla alimentación */}
+        <ScrollView horizontal>
+          <View style={[styles.table, { width: COLUMN_WIDTH * 3 }]}>
+            <View style={styles.rowHeader}>
+              <CellHeader>Alimento</CellHeader>
+              <CellHeader>Frecuencia</CellHeader>
+              <CellHeader>Notas</CellHeader>
+            </View>
+            <View style={[styles.row, { backgroundColor: "#d0f0c0" }]}>
+              <Cell>Heno</Cell>
+              <Cell>Todos los días</Cell>
+              <Cell>Base de la dieta, fibra esencial</Cell>
+            </View>
+            <View style={[styles.row, { backgroundColor: "#ffe5b4" }]}>
+              <Cell>Verduras frescas</Cell>
+              <Cell>Diario</Cell>
+              <Cell>Ej: zanahoria, espinaca, apio</Cell>
+            </View>
+            <View style={[styles.row, { backgroundColor: "#f8d7da" }]}>
+              <Cell>Frutas</Cell>
+              <Cell>2-3 veces por semana</Cell>
+              <Cell>Premio ocasional, evitar exceso</Cell>
+            </View>
+          </View>
+        </ScrollView>
 
-      <Image
-        source={{
-          uri: "https://cdn.pixabay.com/photo/2016/03/27/22/16/rabbit-1283974_1280.jpg",
-        }}
-        style={styles.image}
-      />
+        {/* Desparasitación */}
+        <Text style={styles.sectionTitle}>💊 Desparasitación</Text>
+        <Text style={styles.text}>
+          Los conejos pueden sufrir parásitos internos (lombrices, coccidios) y externos (ácaros, pulgas).
+        </Text>
+        <ScrollView horizontal>
+          <View style={[styles.table, { width: COLUMN_WIDTH * 3 }]}>
+            <View style={styles.rowHeader}>
+              <CellHeader>Tipo</CellHeader>
+              <CellHeader>Frecuencia</CellHeader>
+              <CellHeader>Notas</CellHeader>
+            </View>
+            <View style={[styles.row, { backgroundColor: "#d0f0c0" }]}>
+              <Cell>Interna</Cell>
+              <Cell>Cada 6 meses</Cell>
+              <Cell>Productos específicos para lagomorfos</Cell>
+            </View>
+            <View style={[styles.row, { backgroundColor: "#ffe5b4" }]}>
+              <Cell>Externa</Cell>
+              <Cell>Según exposición</Cell>
+              <Cell>Control de pulgas y ácaros</Cell>
+            </View>
+          </View>
+        </ScrollView>
 
-      <Text style={styles.sectionTitle}>🏥 Salud y Cuidados</Text>
-      <Text style={styles.text}>
-        - Cepíllalos regularmente si tienen pelo largo.{"\n"}
-        - Revisa sus dientes, ya que crecen constantemente y necesitan desgastarlos
-        con heno o juguetes.{"\n"}
-        - Esterilizarlos ayuda a prevenir enfermedades y comportamientos
-        territoriales.{"\n"}
-        - Vacunación y visitas al veterinario especializado son fundamentales.{"\n"}
-      </Text>
+        {/* Vacunas */}
+        <Text style={styles.sectionTitle}>💉 Vacunas</Text>
+        <Text style={styles.text}>
+          Dependiendo del país, se recomienda vacunar contra enfermedades virales graves.
+        </Text>
+        <ScrollView horizontal>
+          <View style={[styles.table, { width: COLUMN_WIDTH * 3 }]}>
+            <View style={styles.rowHeader}>
+              <CellHeader>Vacuna</CellHeader>
+              <CellHeader>Edad</CellHeader>
+              <CellHeader>Refuerzo</CellHeader>
+            </View>
+            <View style={[styles.row, { backgroundColor: "#d0f0c0" }]}>
+              <Cell>Mixomatosis</Cell>
+              <Cell>Desde 6 semanas</Cell>
+              <Cell>Anual</Cell>
+            </View>
+            <View style={[styles.row, { backgroundColor: "#ffe5b4" }]}>
+              <Cell>Enfermedad hemorrágica viral (RHD)</Cell>
+              <Cell>Desde 6-8 semanas</Cell>
+              <Cell>Anual</Cell>
+            </View>
+          </View>
+        </ScrollView>
 
-      <Text style={styles.sectionTitle}>💡 Comportamiento</Text>
-      <Text style={styles.text}>
-        Los conejos son animales sociales y disfrutan la compañía. Pueden convivir
-        con otros conejos, pero es importante una buena adaptación. Les gusta
-        explorar y pueden aprender trucos sencillos, como usar una caja de arena
-        para hacer sus necesidades.
-      </Text>
+        {/* Hábitat */}
+        <Text style={styles.sectionTitle}>🏡 Hábitat y Espacio</Text>
+        <Text style={styles.text}>
+          - Necesitan un espacio amplio para moverse y ejercitarse.{"\n"}
+          - La jaula debe tener piso sólido para evitar lesiones.{"\n"}
+          - Coloca escondites y juguetes para entretenerlos.{"\n"}
+          - Si viven libres en casa, protege cables y plantas tóxicas.
+        </Text>
 
-      <Text style={styles.sectionTitle}>📌 Resumen</Text>
-      <Text style={styles.text}>
-        - Los conejos son mascotas longevas y cariñosas.{"\n"}
-        - Necesitan una dieta basada en heno y verduras frescas.{"\n"}
-        - Requieren espacio para ejercitarse y jugar.{"\n"}
-        - Su salud depende del cuidado dental, cepillado y visitas al veterinario.{"\n"}
-      </Text>
-    </ScrollView>
+        {/* Salud */}
+        <Text style={styles.sectionTitle}>🏥 Salud y Cuidados</Text>
+        <Text style={styles.text}>
+          Cepillado, cuidado dental, esterilización y visitas al veterinario son esenciales para mantener su salud.
+        </Text>
+
+        {/* Comportamiento */}
+        <Text style={styles.sectionTitle}>💡 Comportamiento</Text>
+        <Text style={styles.text}>
+          Los conejos disfrutan la compañía y pueden convivir con otros conejos tras adaptación. Son exploradores y aprenden trucos sencillos.
+        </Text>
+
+        {/* Resumen */}
+        <Text style={styles.sectionTitle}>📌 Resumen</Text>
+        <Text style={styles.text}>
+          - Mascotas longevas y cariñosas.{"\n"}
+          - Dieta basada en heno y verduras.{"\n"}
+          - Necesitan espacio y entretenimiento.{"\n"}
+          - Cuidados en dientes, pelaje y chequeos veterinarios.
+        </Text>
+      </ScrollView>
+
+      <BottomMenu activeTab={activeTab} onTabPress={handleTabPress} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    padding: 20,
-  },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  container: { flex: 1, backgroundColor: "#fdfdfd", padding: 20 },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
   title: {
     fontFamily: "Poppins_Bold",
     fontSize: 28,
     textAlign: "center",
     marginBottom: 20,
+    color: "#2c3e50",
   },
   sectionTitle: {
     fontFamily: "Poppins_Bold",
     fontSize: 22,
     marginTop: 20,
     marginBottom: 10,
+    color: "#27ae60",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+    paddingBottom: 5,
   },
   text: {
     fontFamily: "Poppins_Regular",
     fontSize: 16,
     lineHeight: 24,
     textAlign: "justify",
+    color: "#444",
+    marginBottom: 12,
   },
   image: {
     width: "100%",
-    height: 200,
+    height: 500,
     borderRadius: 12,
-    marginBottom: 15,
+    marginBottom: 20,
+  },
+  table: { borderWidth: 1, borderColor: "#ccc", borderRadius: 6, marginBottom: 20 },
+  rowHeader: { flexDirection: "row", borderBottomWidth: 1, borderColor: "#ccc" },
+  row: { flexDirection: "row", borderTopWidth: 1, borderColor: "#ccc" },
+  cellHeader: {
+    padding: 10,
+    textAlign: "center",
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#000",
+    borderRightWidth: 1,
+    borderColor: "#ccc",
+    backgroundColor: "#d9e3f0",
+  },
+  cell: {
+    padding: 10,
+    textAlign: "center",
+    fontSize: 13,
+    borderRightWidth: 1,
+    borderColor: "#ccc",
   },
 });

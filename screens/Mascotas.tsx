@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 
-export default function Mascotas({ navigation }: any) {
+export default function MisMascotas({ navigation }: any) {
   const [mascotas, setMascotas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

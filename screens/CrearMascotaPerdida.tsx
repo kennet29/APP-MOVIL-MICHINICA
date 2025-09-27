@@ -29,7 +29,7 @@ export default function CrearMascotaPerdida({ navigation }: any) {
   const [foto, setFoto] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const usuarioId = "66f5a53a6b8f59e71cc12345"; // ⚠️ reemplaza con el real
+  const usuarioId = "66f5a53a6b8f59e71cc12345"; // ⚠️ reemplazar con el real
 
   // Animación ZooNica
   const titleScale = useRef(new Animated.Value(0)).current;
@@ -51,7 +51,7 @@ export default function CrearMascotaPerdida({ navigation }: any) {
   // 📷 Seleccionar imagen
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // sigue funcionando, aunque está deprecado
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 0.7,
     });
@@ -88,6 +88,7 @@ export default function CrearMascotaPerdida({ navigation }: any) {
       formData.append("descripcion", descripcion.trim());
       formData.append("fechaPerdida", fechaPerdida.toISOString());
       formData.append("lugarPerdida", lugarPerdida.trim());
+      // ⚡ El backend mete estos en contacto
       formData.append("telefono", telefono.trim());
       if (email) formData.append("email", email.trim());
       formData.append("usuarioId", usuarioId);
@@ -102,14 +103,12 @@ export default function CrearMascotaPerdida({ navigation }: any) {
         } as any);
       }
 
-      const res = await fetch("https://backendmaguey.onrender.com/api/mascotas-perdidas", 
-        {
+      const res = await fetch("https://backendmaguey.onrender.com/api/mascotas-perdidas", {
         method: "POST",
         body: formData,
       });
 
       const data = await res.json();
-      console.log("📤 JSON enviado:", formData);
       console.log("📥 Respuesta backend:", data);
 
       if (res.ok) {

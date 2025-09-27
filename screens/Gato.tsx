@@ -4,13 +4,16 @@ import { useFonts, Poppins_400Regular, Poppins_700Bold } from "@expo-google-font
 import Menu from "./Menu";
 
 export default function VacunasGatos({ navigation }: any) {
-  const [activeTab, setActiveTab] = useState<
-    "Home" | "Profile" | "Mascota" | "MisionVision"
-  >("Mascota");
 
-  const handleTabPress = (tab: "Home" | "Profile" | "Mascota" | "MisionVision") => {
-    setActiveTab(tab);
-  };
+const [activeTab, setActiveTab] = useState<
+  "Home" | "Profile" | "Mascotas" | "MisionVision" | "Notificaciones"
+>("Mascotas");
+
+const handleTabPress = (
+  tab: "Home" | "Profile" | "Mascotas" | "MisionVision" | "Notificaciones"
+) => {
+  setActiveTab(tab);
+};
 
   const [fontsLoaded] = useFonts({
     Poppins_Regular: Poppins_400Regular,
