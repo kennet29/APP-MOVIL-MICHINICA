@@ -1,7 +1,9 @@
 // App.tsx
-import React from "react";
+import React, { useEffect, useCallback } from "react";
+import { Platform } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import * as NavigationBar from "expo-navigation-bar";
 
 // 🔹 Imports de pantallas
 import RazasPerros from "./screens/RazasPerros";
@@ -22,12 +24,13 @@ import RedesSocialesScreen from "./screens/Redes";
 import CrearMascotaPerdida from "./screens/CrearMascotaPerdida";
 
 // 🆕 Nuevas vistas
-import MisMascotas from "./screens/Mascotas"; 
+import MisMascotas from "./screens/Mascotas";
 import HistorialMedicoMascota from "./screens/HistorialMedicoMascota";
-import CrearMascota from "./screens/CrearMascotas"; 
+import CrearMascota from "./screens/CrearMascotas";
 import Notificaciones from "./screens/Notificaciones";
+import Eventos from "./screens/Eventos";
 
-// 🆕 Pantalla de peces
+// 🐟 Peces
 import TratamientoPeces from "./screens/Peces";
 import DatosPeces from "./screens/DatosPeces";
 
@@ -49,58 +52,83 @@ export type RootStackParamList = {
   MascotasPerdidas: undefined;
   CrearMascotaPerdida: undefined;
   DatosPeces: undefined;
+  Eventos: undefined;
 
-  // 🆕 vistas nuevas
+  // nuevas
   MisMascotas: undefined;
   HistorialMedicoMascota: { mascotaId: string };
   CrearMascota: undefined;
-
-  // 🆕 agregar Notificaciones
   Notificaciones: undefined;
-
-  // 🆕 agregar peces
   Peces: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
-  return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
-        {/* Login y Registro */}
-        <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
-        <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
+  const ensureNavBarVisible = useCallback(async () => {
+    if (Platform.OS !== "android") return;
+    try {
+      // ✅ Mantener SIEMPRE visible + comportamiento que no la esconda
+      await NavigationBar.setVisibilityAsync("visible");
+      // Evita el “immersive”; deja la barra como inset (no se oculta por gestos del contenido)
+      await NavigationBar.setBehaviorAsync("inset-swipe");
+      // Opcional: color y contraste de botones
+      await NavigationBar.setBackgroundColorAsync("#000000");
+      await NavigationBar.setButtonStyleAsync("light");
+      // Debug opcional:
+      // const v = await NavigationBar.getVisibilityAsync();
+      // console.log("NavBar visibility:", v);
+    } catch (e) {
+      console.warn("No se pudo asegurar la NavBar:", e);
+    }
+  }, []);
 
-        {/* Pantallas principales */}
-        <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Guia" component={Guia} options={{ headerShown: false }} />
+  // Al montar la app
+  useEffect(() => {
+    ensureNavBarVisible();
+  }, [ensureNavBarVisible]);
+
+  return (
+    <NavigationContainer
+      // También al estar lista y en cada cambio de estado (cambio de pantalla)
+      onReady={ensureNavBarVisible}
+      onStateChange={ensureNavBarVisible}
+    >
+      <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
+        {/* Login y Registro */}
+        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="Register" component={Register} />
+
+        {/* Principales */}
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="Guia" component={Guia} />
+        <Stack.Screen name="Eventos" component={Eventos} />
 
         {/* Animales */}
-        <Stack.Screen name="VacunasPerros" component={VacunasPerros} options={{ headerShown: false }} />
-        <Stack.Screen name="VacunasGatos" component={VacunasGatos} options={{ headerShown: false }} />
-        <Stack.Screen name="RazasGatos" component={RazasGatos} options={{ headerShown: false }} />
-        <Stack.Screen name="VacunasAves" component={VacunasAves} options={{ headerShown: false }} />
-        <Stack.Screen name="Conejos" component={GuiaConejos} options={{ headerShown: false }} />
-        <Stack.Screen name="Tortugas" component={GuiaTortugas} options={{ headerShown: false }} />
+        <Stack.Screen name="VacunasPerros" component={VacunasPerros} />
+        <Stack.Screen name="VacunasGatos" component={VacunasGatos} />
+        <Stack.Screen name="RazasGatos" component={RazasGatos} />
+        <Stack.Screen name="VacunasAves" component={VacunasAves} />
+        <Stack.Screen name="Conejos" component={GuiaConejos} />
+        <Stack.Screen name="Tortugas" component={GuiaTortugas} />
 
-        {/* 🐟 Peces */}
-        <Stack.Screen name="Peces" component={TratamientoPeces} options={{ headerShown: false }} />
-        <Stack.Screen name="DatosPeces" component={DatosPeces} options={{ headerShown: false }} />
+        {/* Peces */}
+        <Stack.Screen name="Peces" component={TratamientoPeces} />
+        <Stack.Screen name="DatosPeces" component={DatosPeces} />
 
         {/* Extras */}
-        <Stack.Screen name="MisionVision" component={MisionVision} options={{ headerShown: false }} />
-        <Stack.Screen name="RedesSocialesScreen" component={RedesSocialesScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="RazasPerros" component={RazasPerros} options={{ headerShown: false }} />
-        <Stack.Screen name="MascotasPerdidas" component={MascotasPerdidas} options={{ headerShown: false }} />
-        <Stack.Screen name="CrearMascotaPerdida" component={CrearMascotaPerdida} options={{ headerShown: false }} />
+        <Stack.Screen name="MisionVision" component={MisionVision} />
+        <Stack.Screen name="RedesSocialesScreen" component={RedesSocialesScreen} />
+        <Stack.Screen name="RazasPerros" component={RazasPerros} />
+        <Stack.Screen name="MascotasPerdidas" component={MascotasPerdidas} />
+        <Stack.Screen name="CrearMascotaPerdida" component={CrearMascotaPerdida} />
 
-        {/* 🆕 Vistas nuevas */}
-        <Stack.Screen name="MisMascotas" component={MisMascotas} options={{ headerShown: false }} />
-        <Stack.Screen name="HistorialMedicoMascota" component={HistorialMedicoMascota} options={{ headerShown: false }} />
-        <Stack.Screen name="CrearMascota" component={CrearMascota} options={{ headerShown: false }} />
-        <Stack.Screen name="Notificaciones" component={Notificaciones} options={{ headerShown: false }} />
+        {/* Nuevas */}
+        <Stack.Screen name="MisMascotas" component={MisMascotas} />
+        <Stack.Screen name="HistorialMedicoMascota" component={HistorialMedicoMascota} />
+        <Stack.Screen name="CrearMascota" component={CrearMascota} />
+        <Stack.Screen name="Notificaciones" component={Notificaciones} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -15,8 +15,8 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 
-// ✅ Importa el menú como componente
 import BottomMenu from "./Menu";
+import ZoonicaTitle from "./Titulo";
 
 export default function Guia({ navigation }: any) {
   const [fontsLoaded] = useFonts({
@@ -24,7 +24,6 @@ export default function Guia({ navigation }: any) {
     Poppins_Bold: Poppins_700Bold,
   });
 
-  // 👇 Aquí cambiamos para que use los mismos tabs que tu menú
   const [activeTab, setActiveTab] = useState<
     "Home" | "Profile" | "Mascotas" | "MisionVision" | "Notificaciones"
   >("Home");
@@ -44,7 +43,6 @@ export default function Guia({ navigation }: any) {
     navigation.navigate(tab);
   };
 
-  // 🔹 Lista de animales (Hámster → Peces)
   const animals = [
     { name: "Perro", route: "VacunasPerros", icon: "dog", color: "#f49953" },
     { name: "Gato", route: "VacunasGatos", icon: "cat", color: "#9d7bb6" },
@@ -56,9 +54,9 @@ export default function Guia({ navigation }: any) {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar hidden={true} />
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Guía de Animales Domésticos</Text>
+        <ZoonicaTitle size={42} />
 
-        {/* 🔹 Tarjetas */}
+        <Text style={styles.subtitle}>Guía de Animales Domésticos</Text>
         <View style={styles.cardsContainer}>
           {animals.map((animal, index) => (
             <TouchableOpacity
@@ -76,8 +74,6 @@ export default function Guia({ navigation }: any) {
           ))}
         </View>
       </ScrollView>
-
-      {/* ✅ Menú importado */}
       <BottomMenu activeTab={activeTab} onTabPress={handleTabPress} />
     </SafeAreaView>
   );
@@ -91,11 +87,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingBottom: 120,
   },
-  title: {
-    fontSize: 28,
-    marginTop: 20,
+  subtitle: {
+    fontSize: 22,
+    marginTop: 10,
     fontFamily: "Poppins_Bold",
     textAlign: "center",
+    color: "#333",
   },
   cardsContainer: {
     flexDirection: "row",

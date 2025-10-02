@@ -23,7 +23,7 @@ export default function Login({ navigation }: any) {
     Poppins_Bold: Poppins_700Bold,
   });
 
-  // 👉 Ahora SIEMPRE se muestra el login primero
+  // 👉 Mostrar pantalla de login siempre (puedes adaptarlo si quieres auto-login)
   useEffect(() => {
     setCheckingToken(false);
   }, []);
@@ -58,15 +58,20 @@ export default function Login({ navigation }: any) {
       if (!response.ok) {
         Alert.alert("Error", data.message || "Credenciales inválidas");
       } else {
-        // Guardar token y email
+        // ✅ Guardar token y datos de usuario en AsyncStorage
         if (data.token) {
           await AsyncStorage.setItem("userToken", data.token);
           await AsyncStorage.setItem("userEmail", email);
+
+          if (data.usuario) {
+            await AsyncStorage.setItem("usuario", JSON.stringify(data.usuario));
+            console.log("✅ Usuario guardado:", data.usuario);
+          }
           console.log("✅ Token guardado:", data.token);
         }
 
         Alert.alert("Éxito", "Inicio de sesión correcto");
-        navigation.replace("Home");
+        navigation.replace("Home"); // 🔹 Redirige al Home
       }
     } catch (error: any) {
       Alert.alert("Error", "No se pudo conectar al servidor");
@@ -130,7 +135,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFF",
   },
   logo: { width: 250, height: 250, borderRadius: 5000, marginTop: -90 },
-  title: { fontSize: 41, marginBottom: 40, color: "#f49953", fontFamily: "Poppins_Bold" },
+  title: {
+    fontSize: 41,
+    marginBottom: 40,
+    color: "#f49953",
+    fontFamily: "Poppins_Bold",
+  },
   input: {
     width: "100%",
     borderWidth: 1,

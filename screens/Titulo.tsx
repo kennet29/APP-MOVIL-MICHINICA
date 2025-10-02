@@ -2,15 +2,22 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
 interface ZoonicaTitleProps {
-  size?: number; 
-  colors?: string[]; 
+  size?: number;
 }
 
-export default function ZoonicaTitle({
-  size = 36,
-  colors = ["#1DB954", "#329bd7", "#F39C12", "#E74C3C", "#8E44AD", "#16A085", "#D35400"], 
-}: ZoonicaTitleProps) {
-  const text = "Zoonica";
+export default function ZoonicaTitle({ size = 36 }: ZoonicaTitleProps) {
+  const text = "ZOÓNICA";
+
+  // 🎨 Colores idénticos al título en HomeScreen
+  const colors = [
+    "#e87170", // Z
+    "#f49953", // O
+    "#9d7bb6", // Ó
+    "#00BFFF", // N
+    "#00BFFF", // I
+    "#00BFFF", // C
+    "#00BFFF", // A
+  ];
 
   return (
     <View style={styles.container}>
@@ -19,7 +26,10 @@ export default function ZoonicaTitle({
           key={index}
           style={[
             styles.letter,
-            { fontSize: size, color: colors[index % colors.length] },
+            {
+              fontSize: size,
+              color: colors[index],
+            },
           ]}
         >
           {char}
@@ -33,6 +43,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     justifyContent: "center",
+    alignItems: "center",
   },
   letter: {
     fontWeight: "bold",

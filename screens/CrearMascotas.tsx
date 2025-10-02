@@ -1,5 +1,5 @@
 // screens/CrearMascota.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,10 +14,11 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import * as ImagePicker from "expo-image-picker"; // ✅ expo-image-picker
+import * as ImagePicker from "expo-image-picker";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootStackParamList } from "../App";
 
 type CrearMascotaNavProp = NativeStackNavigationProp<
@@ -38,8 +39,20 @@ export default function CrearMascota() {
   const [tarjetaVeterinaria, setTarjetaVeterinaria] = useState(false);
   const [fotos, setFotos] = useState<string[]>([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [usuarioId, setUsuarioId] = useState<string | null>(null);
 
-  const usuarioId = "66f5a53a6b8f59e71cc12345"; // ⚠️ reemplazar con el real
+  // 🔹 Recuperar usuario al cargar
+  useEffect(() => {
+    const loadUsuario = async () => {
+      const storedUser = await AsyncStorage.getItem("usuario");
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        setUsuarioId(user._id); // ✅ ahora dinámico
+        console.log("👤 Usuario logueado:", user);
+      }
+    };
+    loadUsuario();
+  }, []);
 
   // 📷 Seleccionar imagen
   const pickImage = async () => {
@@ -72,6 +85,11 @@ export default function CrearMascota() {
       return;
     }
 
+    if (!usuarioId) {
+      Alert.alert("Error", "No se encontró el usuario. Intenta iniciar sesión de nuevo.");
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append("nombre", nombre.trim());
@@ -81,7 +99,7 @@ export default function CrearMascota() {
       formData.append("cumpleaños", fechaNacimiento.toISOString());
       if (descripcion) formData.append("descripcion", descripcion.trim());
       formData.append("tarjetaVeterinaria", tarjetaVeterinaria.toString());
-      formData.append("usuarioId", usuarioId);
+      formData.append("usuarioId", usuarioId); // ✅ dinámico
 
       // 📌 Fotos
       fotos.forEach((foto, index) => {
@@ -95,8 +113,6 @@ export default function CrearMascota() {
           type,
         } as any);
       });
-
-      console.log("📤 Fotos a enviar:", fotos);
 
       const res = await fetch("https://backendmaguey.onrender.com/api/mascotas", {
         method: "POST",
@@ -159,7 +175,7 @@ export default function CrearMascota() {
         onChangeText={setRaza}
       />
 
-      {/* ⚧ Sexo con Picker */}
+      {/* ⚧ Sexo */}
       <Text style={styles.label}>Sexo</Text>
       <View style={styles.pickerWrapper}>
         <Picker
@@ -172,7 +188,7 @@ export default function CrearMascota() {
         </Picker>
       </View>
 
-      {/* 📅 Fecha de nacimiento */}
+      {/* 📅 Fecha nacimiento */}
       <Text style={styles.label}>Fecha de nacimiento</Text>
       <TouchableOpacity
         style={styles.dateButton}

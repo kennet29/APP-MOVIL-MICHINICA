@@ -10,10 +10,12 @@ import {
   Animated,
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function MisMascotas({ navigation }: any) {
   const [mascotas, setMascotas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [usuario, setUsuario] = useState<any>(null);
 
   const titleScale = useRef(new Animated.Value(0)).current;
   const cardColors = ["#e87170", "#f49953", "#9d7bb6", "#00BFFF", "#FFA500"];
@@ -28,14 +30,32 @@ export default function MisMascotas({ navigation }: any) {
   ];
 
   useEffect(() => {
-    fetchMascotas();
+    loadUsuario();
     Animated.spring(titleScale, { toValue: 1, useNativeDriver: true }).start();
   }, []);
 
-  const fetchMascotas = async () => {
+  const loadUsuario = async () => {
     try {
-      const usuarioId = "66f5a53a6b8f59e71cc12345"; // ⚠️ reemplazar por dinámico
-      const res = await fetch(`https://backendmaguey.onrender.com/api/mascotas/usuario/${usuarioId}`);
+      const storedUser = await AsyncStorage.getItem("usuario");
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        setUsuario(user);
+        fetchMascotas(user._id); // ✅ ahora dinámico
+      } else {
+        console.warn("⚠️ No se encontró usuario en AsyncStorage");
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("❌ Error cargando usuario:", error);
+      setLoading(false);
+    }
+  };
+
+  const fetchMascotas = async (usuarioId: string) => {
+    try {
+      const res = await fetch(
+        `https://backendmaguey.onrender.com/api/mascotas/usuario/${usuarioId}`
+      );
       const data = await res.json();
       setMascotas(data);
     } catch (error) {
@@ -51,8 +71,6 @@ export default function MisMascotas({ navigation }: any) {
       ? `https://backendmaguey.onrender.com/api/mascotas/foto/${item.fotoPerfilId}`
       : "https://via.placeholder.com/300x200.png?text=Sin+Foto";
 
-    console.log("📷 Foto URL:", fotoUrl);
-
     return (
       <View style={[styles.card, { backgroundColor: bgColor }]}>
         <Image source={{ uri: fotoUrl }} style={styles.image} />
@@ -67,15 +85,29 @@ export default function MisMascotas({ navigation }: any) {
   };
 
   if (loading)
-    return <ActivityIndicator size="large" color="#1DB954" style={{ marginTop: 50 }} />;
+    return (
+      <ActivityIndicator size="large" color="#1DB954" style={{ marginTop: 50 }} />
+    );
 
   return (
     <View style={styles.container}>
-      <View style={{ flexDirection: "row", justifyContent: "center", marginBottom: 20 }}>
+      {/* 🔹 Mostrar nombre del usuario */}
+      {usuario && (
+        <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 10 }}>
+          Mascotas de {usuario.nombre}
+        </Text>
+      )}
+
+      <View
+        style={{ flexDirection: "row", justifyContent: "center", marginBottom: 20 }}
+      >
         {titleLetters.map((item, index) => (
           <Animated.Text
             key={index}
-            style={[styles.titleZoo, { color: item.color, transform: [{ scale: titleScale }] }]}
+            style={[
+              styles.titleZoo,
+              { color: item.color, transform: [{ scale: titleScale }] },
+            ]}
           >
             {item.letter}
           </Animated.Text>
@@ -93,7 +125,10 @@ export default function MisMascotas({ navigation }: any) {
         />
       )}
 
-      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate("CrearMascota")}>
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => navigation.navigate("CrearMascota")}
+      >
         <FontAwesome5 name="plus" size={24} color="#fff" />
       </TouchableOpacity>
     </View>

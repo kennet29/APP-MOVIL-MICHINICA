@@ -68,10 +68,13 @@ export default function HomeScreen({ navigation }: any) {
       navigation.navigate("Guia");
     } else if (cardName === "MASCOTAS PERDIDAS") {
       navigation.navigate("MascotasPerdidas");
+    } else if (cardName === "EVENTOS") {
+      navigation.navigate("Eventos"); // 👈 redirige a la vista de eventos
     } else {
       console.log(`Card ${cardName} presionada`);
     }
   };
+  
 
   const cardColors = ["#e87170", "#f49953", "#9d7bb6", "#00BFFF", "#FFA500"];
 

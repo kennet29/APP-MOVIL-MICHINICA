@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import BottomMenu from "./Menu";
 import ZoonicaTitle from "./Titulo";
 
@@ -23,17 +24,45 @@ interface Notificacion {
 }
 
 export default function Notificaciones() {
-  const usuarioId = "68c6f6510c0a40556d6ada5d";
   const API_BASE = "https://backendmaguey.onrender.com/api/notificaciones";
 
-  const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
+  const [usuarioId, setUsuarioId] = useState<string | null>(null);
+
+  // 🔹 Estado inicial ya trae la notificación de prueba
+  const [notificaciones, setNotificaciones] = useState<Notificacion[]>([
+    {
+      _id: "demo-peces",
+      mensaje: "Hora de alimentar a tus peces 🐟",
+      leida: false,
+      createdAt: new Date().toISOString(),
+      mascotaId: { nombre: "Peces" },
+    },
+  ]);
+
   const [loading, setLoading] = useState(false);
   const [soloPendientes, setSoloPendientes] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "Home" | "Profile" | "Mascotas" | "MisionVision" | "Notificaciones"
   >("Notificaciones");
 
+  // 🔹 Cargar usuario desde AsyncStorage
+  useEffect(() => {
+    const loadUsuario = async () => {
+      try {
+        const usuarioString = await AsyncStorage.getItem("usuario");
+        if (usuarioString) {
+          const usuario = JSON.parse(usuarioString);
+          setUsuarioId(usuario._id);
+        }
+      } catch (error) {
+        console.error("Error al cargar usuario:", error);
+      }
+    };
+    loadUsuario();
+  }, []);
+
   const fetchNotificaciones = async () => {
+    if (!usuarioId) return;
     setLoading(true);
     try {
       const url = soloPendientes
@@ -42,7 +71,18 @@ export default function Notificaciones() {
 
       const res = await fetch(url);
       const data = await res.json();
-      setNotificaciones(data);
+
+      // 🔹 Agregamos la demo al inicio de la lista, sin tocar el backend
+      setNotificaciones((prev) => [
+        {
+          _id: "demo-peces",
+          mensaje: "Hora de alimentar a tus peces 🐟",
+          leida: false,
+          createdAt: new Date().toISOString(),
+          mascotaId: { nombre: "Peces" },
+        },
+        ...data,
+      ]);
     } catch (error) {
       console.error("Error al obtener notificaciones:", error);
     } finally {
@@ -50,18 +90,11 @@ export default function Notificaciones() {
     }
   };
 
-  const marcarLeida = async (id: string) => {
-    try {
-      await fetch(`${API_BASE}/${id}/leida`, { method: "PUT" });
-      fetchNotificaciones();
-    } catch (error) {
-      console.error("Error al marcar como leída:", error);
-    }
-  };
-
   useEffect(() => {
-    fetchNotificaciones();
-  }, [soloPendientes]);
+    if (usuarioId) {
+      fetchNotificaciones();
+    }
+  }, [soloPendientes, usuarioId]);
 
   return (
     <View style={styles.container}>
@@ -94,7 +127,7 @@ export default function Notificaciones() {
                 {
                   backgroundColor: item.leida
                     ? "#ecf0f1"
-                    : colors[index % colors.length] + "33", // pastel del color
+                    : colors[index % colors.length] + "33",
                   borderLeftWidth: 6,
                   borderLeftColor: item.leida
                     ? "#7f8c8d"
@@ -113,15 +146,6 @@ export default function Notificaciones() {
                   {new Date(item.createdAt).toLocaleString()}
                 </Text>
               </View>
-
-              {!item.leida && (
-                <TouchableOpacity
-                  style={styles.btnLeida}
-                  onPress={() => marcarLeida(item._id)}
-                >
-                  <Text style={styles.btnLeidaText}>Marcar leída</Text>
-                </TouchableOpacity>
-              )}
             </View>
           )}
         />
@@ -165,14 +189,6 @@ const styles = StyleSheet.create({
   },
   mensaje: { fontSize: 16, marginBottom: 5 },
   fecha: { fontSize: 12, color: "#666" },
-  btnLeida: {
-    marginTop: 10,
-    backgroundColor: "#1DB954",
-    padding: 8,
-    borderRadius: 6,
-    alignSelf: "flex-start",
-  },
-  btnLeidaText: { color: "#fff", fontWeight: "bold" },
   menuContainer: {
     position: "absolute",
     bottom: 25,
