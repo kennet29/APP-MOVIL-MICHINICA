@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { RootStackParamList } from "../App"; // 👈 tipo del stack
+import { RootStackParamList } from "../App";
 
 type HistorialRouteProp = RouteProp<
   RootStackParamList,
@@ -17,11 +17,6 @@ type HistorialRouteProp = RouteProp<
 type MascotaDetalle = {
   _id: string;
   nombre: string;
-  vacunas?: string[];
-  operaciones?: string[];
-  visitasMedicas?: string[];
-  desparasitaciones?: string[];
-  enfermedades?: string[];
 };
 
 export default function HistorialMedicoMascota() {
@@ -29,23 +24,54 @@ export default function HistorialMedicoMascota() {
   const { mascotaId } = route.params;
 
   const [mascota, setMascota] = useState<MascotaDetalle | null>(null);
+  const [vacunas, setVacunas] = useState<string[]>([]);
+  const [operaciones, setOperaciones] = useState<string[]>([]);
+  const [desparasitaciones, setDesparasitaciones] = useState<string[]>([]);
+  const [enfermedades, setEnfermedades] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchMascota = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(
+        // 🔹 Info general mascota
+        const resMascota = await fetch(
           `https://backendmaguey.onrender.com/api/mascotas/${mascotaId}`
         );
-        const data = await res.json();
-        setMascota(data);
+        const dataMascota = await resMascota.json();
+        setMascota(dataMascota);
+
+        // 🔹 Vacunas
+        const resVacunas = await fetch(
+          `https://backendmaguey.onrender.com/api/vacunas/mascota/${mascotaId}`
+        );
+        setVacunas(await resVacunas.json());
+
+        // 🔹 Operaciones
+        const resOperaciones = await fetch(
+          `https://backendmaguey.onrender.com/api/operaciones/mascota/${mascotaId}`
+        );
+        setOperaciones(await resOperaciones.json());
+
+        // 🔹 Desparasitaciones
+        const resDesparasitaciones = await fetch(
+          `https://backendmaguey.onrender.com/api/desparacitaciones/mascota/${mascotaId}`
+        );
+        setDesparasitaciones(await resDesparasitaciones.json());
+
+        // 🔹 Enfermedades
+        const resEnfermedades = await fetch(
+          `https://backendmaguey.onrender.com/api/enfermedades/mascota/${mascotaId}`
+        );
+        setEnfermedades(await resEnfermedades.json());
+
       } catch (error) {
         console.error("❌ Error cargando historial médico:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchMascota();
+
+    fetchData();
   }, [mascotaId]);
 
   if (loading) {
@@ -66,24 +92,24 @@ export default function HistorialMedicoMascota() {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Historial médico de {mascota.nombre}</Text>
 
-      <Tabla titulo="Vacunas" datos={mascota.vacunas} />
-      <Tabla titulo="Operaciones" datos={mascota.operaciones} />
-      <Tabla titulo="Visitas al veterinario" datos={mascota.visitasMedicas} />
-      <Tabla titulo="Desparasitaciones" datos={mascota.desparasitaciones} />
-      <Tabla titulo="Enfermedades crónicas" datos={mascota.enfermedades} />
+      <Tabla titulo="Vacunas" datos={vacunas} />
+      <Tabla titulo="Operaciones" datos={operaciones} />
+      <Tabla titulo="Desparasitaciones" datos={desparasitaciones} />
+      <Tabla titulo="Enfermedades crónicas" datos={enfermedades} />
     </ScrollView>
   );
 }
 
 // 📌 Tabla reutilizable
-function Tabla({ titulo, datos }: { titulo: string; datos?: string[] }) {
+function Tabla({ titulo, datos }: { titulo: string; datos?: any[] }) {
   return (
     <View style={styles.table}>
       <Text style={styles.tableTitle}>{titulo}</Text>
       {datos && datos.length > 0 ? (
         datos.map((item, idx) => (
           <View key={idx} style={styles.row}>
-            <Text style={styles.cell}>{item}</Text>
+            {/* 👇 Ajusta si la API devuelve objetos en vez de strings */}
+            <Text style={styles.cell}>{item.nombre || item}</Text>
           </View>
         ))
       ) : (
