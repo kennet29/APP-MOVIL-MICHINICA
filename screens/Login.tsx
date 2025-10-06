@@ -23,7 +23,6 @@ export default function Login({ navigation }: any) {
     Poppins_Bold: Poppins_700Bold,
   });
 
-  // 👉 Mostrar pantalla de login siempre (puedes adaptarlo si quieres auto-login)
   useEffect(() => {
     setCheckingToken(false);
   }, []);
@@ -44,38 +43,41 @@ export default function Login({ navigation }: any) {
 
     setLoading(true);
     try {
-      const response = await fetch(
-        "https://backendmaguey.onrender.com/api/auth/signin",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      const response = await fetch("https://backendmaguey.onrender.com/api/auth/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
       const data = await response.json();
+      console.log("📦 Respuesta del backend:", data);
 
       if (!response.ok) {
         Alert.alert("Error", data.message || "Credenciales inválidas");
       } else {
-        // ✅ Guardar token y datos de usuario en AsyncStorage
+        // ✅ Guardar token y datos del usuario
         if (data.token) {
           await AsyncStorage.setItem("userToken", data.token);
           await AsyncStorage.setItem("userEmail", email);
 
-          if (data.usuario) {
-            await AsyncStorage.setItem("usuario", JSON.stringify(data.usuario));
-            console.log("✅ Usuario guardado:", data.usuario);
-          }
+          // 👇 Crear un objeto usuario basado en la respuesta del backend
+          const usuario = {
+            _id: data._id, // viene directamente del backend
+            email,
+          };
+
+          await AsyncStorage.setItem("usuario", JSON.stringify(usuario));
+
+          console.log("✅ Usuario guardado en AsyncStorage:", usuario);
           console.log("✅ Token guardado:", data.token);
         }
 
         Alert.alert("Éxito", "Inicio de sesión correcto");
-        navigation.replace("Home"); // 🔹 Redirige al Home
+        navigation.replace("Home");
       }
     } catch (error: any) {
       Alert.alert("Error", "No se pudo conectar al servidor");
-      console.error(error);
+      console.error("❌ Error en login:", error);
     } finally {
       setLoading(false);
     }

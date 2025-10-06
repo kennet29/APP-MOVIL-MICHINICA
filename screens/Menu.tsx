@@ -3,11 +3,12 @@ import { View, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface BottomMenuProps {
-  activeTab: "Home" | "Profile" | "Mascotas" | "MisionVision" | "Notificaciones";
+  activeTab: "Home" | "Profile" | "MisMascotas" | "MisionVision" | "Notificaciones";
   onTabPress: (
-    tab: "Home" | "Profile" | "Mascotas" | "MisionVision" | "Notificaciones"
+    tab: "Home" | "Profile" | "MisMascotas" | "MisionVision" | "Notificaciones"
   ) => void;
 }
+
 
 export default function BottomMenu({ activeTab, onTabPress }: BottomMenuProps) {
   return (
@@ -20,10 +21,7 @@ export default function BottomMenu({ activeTab, onTabPress }: BottomMenuProps) {
         />
       </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => onTabPress("Profile")}
-        style={styles.menuItem}
-      >
+      <TouchableOpacity onPress={() => onTabPress("Profile")} style={styles.menuItem}>
         <FontAwesome5
           name="user"
           size={24}
@@ -31,22 +29,15 @@ export default function BottomMenu({ activeTab, onTabPress }: BottomMenuProps) {
         />
       </TouchableOpacity>
 
-
-      <TouchableOpacity
-        onPress={() => onTabPress("Mascotas")}
-        style={styles.menuItem}
-      >
+      <TouchableOpacity onPress={() => onTabPress("MisMascotas")} style={styles.menuItem}>
         <MaterialCommunityIcons
           name="dog"
           size={28}
-          color={activeTab === "Mascotas" ? "#1DB954" : "#fff"}
+          color={activeTab === "MisMascotas" ? "#1DB954" : "#fff"}
         />
       </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => onTabPress("Notificaciones")}
-        style={styles.menuItem}
-      >
+      <TouchableOpacity onPress={() => onTabPress("Notificaciones")} style={styles.menuItem}>
         <FontAwesome5
           name="bell"
           size={24}
@@ -54,10 +45,7 @@ export default function BottomMenu({ activeTab, onTabPress }: BottomMenuProps) {
         />
       </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => onTabPress("MisionVision")}
-        style={styles.menuItem}
-      >
+      <TouchableOpacity onPress={() => onTabPress("MisionVision")} style={styles.menuItem}>
         <MaterialCommunityIcons
           name="heart-pulse"
           size={28}

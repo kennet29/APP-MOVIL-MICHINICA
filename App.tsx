@@ -5,7 +5,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as NavigationBar from "expo-navigation-bar";
 
-// 🔹 Imports de pantallas
+// 🔹 Imports de pantallas principales
 import RazasPerros from "./screens/RazasPerros";
 import RazasGatos from "./screens/RazasGatos";
 import MascotasPerdidas from "./screens/MascotaPerdida";
@@ -22,17 +22,26 @@ import GuiaTortugas from "./screens/Tortuga";
 import MisionVision from "./screens/MisionVision";
 import RedesSocialesScreen from "./screens/Redes";
 import CrearMascotaPerdida from "./screens/CrearMascotaPerdida";
+import EditarVacuna from "./screens/EditarVacuna";
 
-// 🆕 Nuevas vistas
+// 🔹 Vistas nuevas
 import MisMascotas from "./screens/Mascotas";
 import HistorialMedicoMascota from "./screens/HistorialMedicoMascota";
 import CrearMascota from "./screens/CrearMascotas";
 import Notificaciones from "./screens/Notificaciones";
 import Eventos from "./screens/Eventos";
 
-// 🐟 Peces
+// 🔹 Vistas adicionales
 import TratamientoPeces from "./screens/Peces";
 import DatosPeces from "./screens/DatosPeces";
+
+// 🩺 Vistas médicas (crear / editar)
+import CrearVacuna from "./screens/CrearVacuna";
+// Si ya tienes estas pantallas o las agregarás pronto:
+//import CrearOperacion from "./screens/CrearOperacion";
+//import CrearDesparasitacion from "./screens/CrearDesparasitacion";
+//import CrearEnfermedad from "./screens/CrearEnfermedad";
+//import CrearVisita from "./screens/CrearVisita";
 
 export type RootStackParamList = {
   Login: undefined;
@@ -54,12 +63,20 @@ export type RootStackParamList = {
   DatosPeces: undefined;
   Eventos: undefined;
 
-  // nuevas
+  // 🐾 nuevas vistas
   MisMascotas: undefined;
   HistorialMedicoMascota: { mascotaId: string };
   CrearMascota: undefined;
   Notificaciones: undefined;
   Peces: undefined;
+
+  // 🩺 vistas médicas (crear / editar)
+  CrearVacuna: { mascotaId: string; vacunaId?: string };
+  EditarVacuna:{mascotaId: string,vacunaId?:string};
+  CrearOperacion: { mascotaId: string; operacionId?: string };
+  CrearDesparasitacion: { mascotaId: string; desparasitacionId?: string };
+  CrearEnfermedad: { mascotaId: string; enfermedadId?: string };
+  CrearVisita: { mascotaId: string; visitaId?: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -70,65 +87,73 @@ export default function App() {
     try {
       // ✅ Mantener SIEMPRE visible + comportamiento que no la esconda
       await NavigationBar.setVisibilityAsync("visible");
-      // Evita el “immersive”; deja la barra como inset (no se oculta por gestos del contenido)
       await NavigationBar.setBehaviorAsync("inset-swipe");
-      // Opcional: color y contraste de botones
       await NavigationBar.setBackgroundColorAsync("#000000");
       await NavigationBar.setButtonStyleAsync("light");
-      // Debug opcional:
-      // const v = await NavigationBar.getVisibilityAsync();
-      // console.log("NavBar visibility:", v);
     } catch (e) {
       console.warn("No se pudo asegurar la NavBar:", e);
     }
   }, []);
 
-  // Al montar la app
   useEffect(() => {
     ensureNavBarVisible();
   }, [ensureNavBarVisible]);
 
   return (
     <NavigationContainer
-      // También al estar lista y en cada cambio de estado (cambio de pantalla)
       onReady={ensureNavBarVisible}
       onStateChange={ensureNavBarVisible}
     >
-      <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
-        {/* Login y Registro */}
+      <Stack.Navigator
+        initialRouteName="Login"
+        screenOptions={{ headerShown: false }}
+      >
+        {/* 🔹 Autenticación */}
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Register" component={Register} />
 
-        {/* Principales */}
+        {/* 🔹 Pantallas principales */}
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Guia" component={Guia} />
         <Stack.Screen name="Eventos" component={Eventos} />
 
-        {/* Animales */}
+        {/* 🔹 Vacunas y guías */}
         <Stack.Screen name="VacunasPerros" component={VacunasPerros} />
         <Stack.Screen name="VacunasGatos" component={VacunasGatos} />
         <Stack.Screen name="RazasGatos" component={RazasGatos} />
         <Stack.Screen name="VacunasAves" component={VacunasAves} />
         <Stack.Screen name="Conejos" component={GuiaConejos} />
         <Stack.Screen name="Tortugas" component={GuiaTortugas} />
-
-        {/* Peces */}
         <Stack.Screen name="Peces" component={TratamientoPeces} />
         <Stack.Screen name="DatosPeces" component={DatosPeces} />
-
-        {/* Extras */}
         <Stack.Screen name="MisionVision" component={MisionVision} />
         <Stack.Screen name="RedesSocialesScreen" component={RedesSocialesScreen} />
         <Stack.Screen name="RazasPerros" component={RazasPerros} />
+
+        {/* 🔹 Mascotas */}
         <Stack.Screen name="MascotasPerdidas" component={MascotasPerdidas} />
         <Stack.Screen name="CrearMascotaPerdida" component={CrearMascotaPerdida} />
-
-        {/* Nuevas */}
         <Stack.Screen name="MisMascotas" component={MisMascotas} />
-        <Stack.Screen name="HistorialMedicoMascota" component={HistorialMedicoMascota} />
         <Stack.Screen name="CrearMascota" component={CrearMascota} />
+        <Stack.Screen name="HistorialMedicoMascota" component={HistorialMedicoMascota} />
+
+        {/* 🔹 Notificaciones */}
         <Stack.Screen name="Notificaciones" component={Notificaciones} />
+        <Stack.Screen name="CrearVacuna" component={CrearVacuna} />
+        <Stack.Screen
+  name="EditarVacuna"
+  component={EditarVacuna}
+  options={{ title: "Editar Vacuna" }}
+/>
+
+        {/* 🩺 Rutas médicas (crear / editar) 
+
+        <Stack.Screen name="CrearOperacion" component={CrearOperacion} />
+        <Stack.Screen name="CrearDesparasitacion" component={CrearDesparasitacion} />
+        <Stack.Screen name="CrearEnfermedad" component={CrearEnfermedad} />
+        <Stack.Screen name="CrearVisita" component={CrearVisita} />
+        */}
       </Stack.Navigator>
     </NavigationContainer>
   );

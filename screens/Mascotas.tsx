@@ -19,15 +19,6 @@ export default function MisMascotas({ navigation }: any) {
 
   const titleScale = useRef(new Animated.Value(0)).current;
   const cardColors = ["#e87170", "#f49953", "#9d7bb6", "#00BFFF", "#FFA500"];
-  const titleLetters = [
-    { letter: "Z", color: cardColors[0] },
-    { letter: "O", color: cardColors[1] },
-    { letter: "O", color: cardColors[2] },
-    { letter: "N", color: cardColors[3] },
-    { letter: "I", color: cardColors[4] },
-    { letter: "C", color: "#9d7bb6" },
-    { letter: "A", color: "#00BFFF" },
-  ];
 
   useEffect(() => {
     loadUsuario();
@@ -40,7 +31,7 @@ export default function MisMascotas({ navigation }: any) {
       if (storedUser) {
         const user = JSON.parse(storedUser);
         setUsuario(user);
-        fetchMascotas(user._id); // ✅ ahora dinámico
+        fetchMascotas(user._id);
       } else {
         console.warn("⚠️ No se encontró usuario en AsyncStorage");
         setLoading(false);
@@ -79,6 +70,18 @@ export default function MisMascotas({ navigation }: any) {
           <Text style={styles.texto}>Especie: {item.especie}</Text>
           <Text style={styles.texto}>Raza: {item.raza || "N/D"}</Text>
           <Text style={styles.texto}>Sexo: {item.sexo}</Text>
+
+          {/* 🔹 Botón "Más información" */}
+          <TouchableOpacity
+            style={styles.infoButton}
+            onPress={() =>
+              navigation.navigate("HistorialMedicoMascota", {
+                mascotaId: item._id,
+              })
+            }
+          >
+            <Text style={styles.infoButtonText}>Más información</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -91,28 +94,7 @@ export default function MisMascotas({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      {/* 🔹 Mostrar nombre del usuario */}
-      {usuario && (
-        <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 10 }}>
-          Mascotas de {usuario.nombre}
-        </Text>
-      )}
-
-      <View
-        style={{ flexDirection: "row", justifyContent: "center", marginBottom: 20 }}
-      >
-        {titleLetters.map((item, index) => (
-          <Animated.Text
-            key={index}
-            style={[
-              styles.titleZoo,
-              { color: item.color, transform: [{ scale: titleScale }] },
-            ]}
-          >
-            {item.letter}
-          </Animated.Text>
-        ))}
-      </View>
+      {usuario && <Text style={styles.title}>Mis Mascotas</Text>}
 
       {mascotas.length === 0 ? (
         <Text style={styles.empty}>No tienes mascotas registradas</Text>
@@ -137,7 +119,14 @@ export default function MisMascotas({ navigation }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 15, backgroundColor: "#fff" },
-  titleZoo: { fontSize: 36, fontWeight: "bold", marginBottom: 10 },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginTop: 20,
+    marginBottom: 15,
+    color: "#333",
+  },
   card: {
     borderRadius: 12,
     marginBottom: 15,
@@ -152,6 +141,18 @@ const styles = StyleSheet.create({
   nombre: { fontSize: 18, fontWeight: "bold", color: "#fff", marginBottom: 5 },
   texto: { fontSize: 14, color: "#fff" },
   empty: { fontSize: 18, color: "#666", textAlign: "center", marginTop: 50 },
+  infoButton: {
+    marginTop: 10,
+    backgroundColor: "#ffffffaa",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignSelf: "flex-start",
+  },
+  infoButtonText: {
+    color: "#000",
+    fontWeight: "bold",
+  },
   fab: {
     position: "absolute",
     bottom: 25,
