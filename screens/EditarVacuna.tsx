@@ -172,7 +172,6 @@ export default function EditarVacuna() {
   );
 }
 
-// 🎨 Estilos
 const styles = StyleSheet.create({
   container: {
     padding: 20,
