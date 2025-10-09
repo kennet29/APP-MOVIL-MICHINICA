@@ -1,11 +1,10 @@
-// App.tsx
 import React, { useEffect, useCallback } from "react";
 import { Platform } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as NavigationBar from "expo-navigation-bar";
 
-// 🔹 Imports de pantallas principales
+// 🔹 Pantallas principales
 import RazasPerros from "./screens/RazasPerros";
 import RazasGatos from "./screens/RazasGatos";
 import MascotasPerdidas from "./screens/MascotaPerdida";
@@ -22,12 +21,11 @@ import GuiaTortugas from "./screens/Tortuga";
 import MisionVision from "./screens/MisionVision";
 import RedesSocialesScreen from "./screens/Redes";
 import CrearMascotaPerdida from "./screens/CrearMascotaPerdida";
-import EditarVacuna from "./screens/EditarVacuna";
 
-// 🔹 Vistas nuevas
+// 🔹 Secciones del sistema
 import MisMascotas from "./screens/Mascotas";
-import HistorialMedicoMascota from "./screens/HistorialMedicoMascota";
 import CrearMascota from "./screens/CrearMascotas";
+import HistorialMedicoMascota from "./screens/HistorialMedicoMascota";
 import Notificaciones from "./screens/Notificaciones";
 import Eventos from "./screens/Eventos";
 
@@ -37,46 +35,54 @@ import DatosPeces from "./screens/DatosPeces";
 
 // 🩺 Vistas médicas (crear / editar)
 import CrearVacuna from "./screens/CrearVacuna";
-// Si ya tienes estas pantallas o las agregarás pronto:
-//import CrearOperacion from "./screens/CrearOperacion";
-//import CrearDesparasitacion from "./screens/CrearDesparasitacion";
-//import CrearEnfermedad from "./screens/CrearEnfermedad";
-//import CrearVisita from "./screens/CrearVisita";
+import CrearDesparasitacion from "./screens/CrearDesparasitacion";
+
+// 🗺️ Nueva vista de mapa
+
+import Mapa from "./screens/Mapa";
 
 export type RootStackParamList = {
+  // 🔑 Autenticación
   Login: undefined;
   Register: undefined;
+
+  // 🏠 Navegación principal
   Home: undefined;
   Profile: undefined;
   Guia: undefined;
+  Eventos: undefined;
+  Mapa: undefined; // ✅ Nueva vista añadida
+
+  // 🐶 Guías y vacunas
   VacunasPerros: undefined;
   VacunasGatos: undefined;
+  RazasPerros: undefined;
   RazasGatos: undefined;
   VacunasAves: undefined;
   Conejos: undefined;
   Tortugas: undefined;
+  Peces: undefined;
+  DatosPeces: undefined;
   MisionVision: undefined;
   RedesSocialesScreen: undefined;
-  RazasPerros: undefined;
+
+  // 🐾 Mascotas y adopciones
   MascotasPerdidas: undefined;
   CrearMascotaPerdida: undefined;
-  DatosPeces: undefined;
-  Eventos: undefined;
-
-  // 🐾 nuevas vistas
   MisMascotas: undefined;
-  HistorialMedicoMascota: { mascotaId: string };
   CrearMascota: undefined;
-  Notificaciones: undefined;
-  Peces: undefined;
 
-  // 🩺 vistas médicas (crear / editar)
+  // 🩺 Historial médico
+  HistorialMedicoMascota: { mascotaId: string };
+
+  // 🔔 Notificaciones
+  Notificaciones: undefined;
+
+  // 🩺 Vistas médicas (crear/editar)
   CrearVacuna: { mascotaId: string; vacunaId?: string };
-  EditarVacuna:{mascotaId: string,vacunaId?:string};
-  CrearOperacion: { mascotaId: string; operacionId?: string };
   CrearDesparasitacion: { mascotaId: string; desparasitacionId?: string };
-  CrearEnfermedad: { mascotaId: string; enfermedadId?: string };
-  CrearVisita: { mascotaId: string; visitaId?: string };
+  CrearEnfermedad?: { mascotaId: string; enfermedadId?: string };
+  CrearVisita?: { mascotaId: string; visitaId?: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -85,7 +91,7 @@ export default function App() {
   const ensureNavBarVisible = useCallback(async () => {
     if (Platform.OS !== "android") return;
     try {
-      // ✅ Mantener SIEMPRE visible + comportamiento que no la esconda
+      // Mantener visible la barra de navegación en Android
       await NavigationBar.setVisibilityAsync("visible");
       await NavigationBar.setBehaviorAsync("inset-swipe");
       await NavigationBar.setBackgroundColorAsync("#000000");
@@ -117,10 +123,12 @@ export default function App() {
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Guia" component={Guia} />
         <Stack.Screen name="Eventos" component={Eventos} />
+      <Stack.Screen name="Mapa" component={Mapa} />  
 
-        {/* 🔹 Vacunas y guías */}
+        {/* 🔹 Guías y fichas de animales */}
         <Stack.Screen name="VacunasPerros" component={VacunasPerros} />
         <Stack.Screen name="VacunasGatos" component={VacunasGatos} />
+        <Stack.Screen name="RazasPerros" component={RazasPerros} />
         <Stack.Screen name="RazasGatos" component={RazasGatos} />
         <Stack.Screen name="VacunasAves" component={VacunasAves} />
         <Stack.Screen name="Conejos" component={GuiaConejos} />
@@ -128,32 +136,33 @@ export default function App() {
         <Stack.Screen name="Peces" component={TratamientoPeces} />
         <Stack.Screen name="DatosPeces" component={DatosPeces} />
         <Stack.Screen name="MisionVision" component={MisionVision} />
-        <Stack.Screen name="RedesSocialesScreen" component={RedesSocialesScreen} />
-        <Stack.Screen name="RazasPerros" component={RazasPerros} />
+        <Stack.Screen
+          name="RedesSocialesScreen"
+          component={RedesSocialesScreen}
+        />
 
         {/* 🔹 Mascotas */}
         <Stack.Screen name="MascotasPerdidas" component={MascotasPerdidas} />
-        <Stack.Screen name="CrearMascotaPerdida" component={CrearMascotaPerdida} />
+        <Stack.Screen
+          name="CrearMascotaPerdida"
+          component={CrearMascotaPerdida}
+        />
         <Stack.Screen name="MisMascotas" component={MisMascotas} />
         <Stack.Screen name="CrearMascota" component={CrearMascota} />
-        <Stack.Screen name="HistorialMedicoMascota" component={HistorialMedicoMascota} />
+        <Stack.Screen
+          name="HistorialMedicoMascota"
+          component={HistorialMedicoMascota}
+        />
 
         {/* 🔹 Notificaciones */}
         <Stack.Screen name="Notificaciones" component={Notificaciones} />
+
+        {/* 🩺 Vistas médicas (crear/editar) */}
         <Stack.Screen name="CrearVacuna" component={CrearVacuna} />
         <Stack.Screen
-  name="EditarVacuna"
-  component={EditarVacuna}
-  options={{ title: "Editar Vacuna" }}
-/>
-
-        {/* 🩺 Rutas médicas (crear / editar) 
-
-        <Stack.Screen name="CrearOperacion" component={CrearOperacion} />
-        <Stack.Screen name="CrearDesparasitacion" component={CrearDesparasitacion} />
-        <Stack.Screen name="CrearEnfermedad" component={CrearEnfermedad} />
-        <Stack.Screen name="CrearVisita" component={CrearVisita} />
-        */}
+          name="CrearDesparasitacion"
+          component={CrearDesparasitacion}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

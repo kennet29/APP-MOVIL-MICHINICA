@@ -55,12 +55,19 @@ export default function HistorialMedicoMascota() {
       const fetchSafe = async (key: string, url: string) => {
         try {
           const res = await fetch(url);
-          if (!res.ok) return [];
-          const type = res.headers.get("content-type");
-          if (!type?.includes("application/json")) return [];
+          if (!res.ok) {
+            console.warn(`⚠️ [${key}] devolvió status ${res.status}`);
+            return [];
+          }
+          const contentType = res.headers.get("content-type");
+          if (!contentType?.includes("application/json")) {
+            console.warn(`⚠️ [${key}] devolvió contenido no JSON`);
+            return [];
+          }
           const data = await res.json();
           return Array.isArray(data) ? data : [data];
-        } catch {
+        } catch (err: any) {
+          console.warn(`⚠️ Error al obtener ${key}:`, err.message);
           return [];
         }
       };
@@ -88,6 +95,8 @@ export default function HistorialMedicoMascota() {
         setDesparasitaciones(dataDesparas);
         setEnfermedades(dataEnfer);
         setVisitas(dataVisitas);
+      } catch (error) {
+        console.error("❌ Error general al cargar historial:", error);
       } finally {
         setLoading(false);
       }
@@ -104,101 +113,107 @@ export default function HistorialMedicoMascota() {
     return edad > 0 ? `${edad} años` : "Menos de 1 año";
   };
 
-  if (loading)
+  if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#007bff" />
         <Text style={{ marginTop: 10 }}>Cargando historial médico...</Text>
       </View>
     );
+  }
 
-  if (!mascota)
+  if (!mascota) {
     return (
       <View style={styles.errorContainer}>
         <FontAwesome5 name="exclamation-triangle" size={40} color="#ff4444" />
         <Text style={styles.errorText}>No se encontró la mascota</Text>
       </View>
     );
+  }
 
   const fotoUrl = mascota.fotoPerfilId
     ? `https://backendmaguey.onrender.com/api/mascotas/foto/${mascota.fotoPerfilId}`
     : "https://via.placeholder.com/300x200.png?text=Sin+Foto";
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 100 }}
+    >
       <Text style={styles.title}>Historial médico de {mascota.nombre}</Text>
 
-      {/* 📸 Información general */}
+      {/* 📸 Información de la mascota */}
       <View style={styles.card}>
         <Image source={{ uri: fotoUrl }} style={styles.image} />
         <Text style={styles.petName}>{mascota.nombre}</Text>
         <Text style={styles.petData}>🐾 Especie: {mascota.especie}</Text>
         <Text style={styles.petData}>🧬 Raza: {mascota.raza || "N/D"}</Text>
         <Text style={styles.petData}>⚧ Sexo: {mascota.sexo}</Text>
-        <Text style={styles.petData}>🎂 Edad: {calcularEdad(mascota.cumpleaños)}</Text>
+        <Text style={styles.petData}>
+          🎂 Edad: {calcularEdad(mascota.cumpleaños)}
+        </Text>
         {mascota.descripcion ? (
           <Text style={styles.description}>📝 {mascota.descripcion}</Text>
         ) : null}
       </View>
 
-      {/* 🔹 Historial */}
+      {/* 🔹 Secciones médicas */}
       <Tabla
         titulo="💉 Vacunas"
         datos={vacunas}
         color="#4CAF50"
         onAgregar={() => navigation.navigate("CrearVacuna", { mascotaId })}
-        onEditar={(id) => navigation.navigate("EditarVacuna", { id, mascotaId })}
       />
+
       <Tabla
         titulo="🏥 Operaciones"
         datos={operaciones}
         color="#FF9800"
         onAgregar={() => navigation.navigate("CrearOperacion", { mascotaId })}
-        onEditar={(id) => navigation.navigate("EditarOperacion", { id, mascotaId })}
       />
+
       <Tabla
         titulo="🪱 Desparasitaciones"
         datos={desparasitaciones}
         color="#673AB7"
-        onAgregar={() => navigation.navigate("CrearDesparasitacion", { mascotaId })}
-        onEditar={(id) => navigation.navigate("EditarDesparasitacion", { id, mascotaId })}
+        onAgregar={() =>
+          navigation.navigate("CrearDesparasitacion", { mascotaId })
+        }
       />
+
       <Tabla
         titulo="⚕️ Enfermedades crónicas"
         datos={enfermedades}
         color="#E91E63"
         onAgregar={() => navigation.navigate("CrearEnfermedad", { mascotaId })}
-        onEditar={(id) => navigation.navigate("EditarEnfermedad", { id, mascotaId })}
       />
+
       <Tabla
         titulo="🩺 Visitas médicas"
         datos={visitas}
         color="#03A9F4"
         onAgregar={() => navigation.navigate("CrearVisita", { mascotaId })}
-        onEditar={(id) => navigation.navigate("EditarVisita", { id, mascotaId })}
       />
     </ScrollView>
   );
 }
 
-// 📋 Tabla con 3 columnas y desplazamiento lateral
+// 📋 Tabla reutilizable
 function Tabla({
   titulo,
   datos,
   color,
   onAgregar,
-  onEditar,
 }: {
   titulo: string;
   datos?: any[];
   color: string;
   onAgregar: () => void;
-  onEditar: (id: string) => void;
 }) {
-  const formatearFecha = (f?: string) => {
-    if (!f) return "Sin fecha";
+  const formatearFecha = (f: string) => {
     try {
-      return new Date(f).toLocaleDateString("es-ES");
+      const d = new Date(f);
+      return d.toLocaleDateString("es-ES");
     } catch {
       return f;
     }
@@ -214,42 +229,23 @@ function Tabla({
         </TouchableOpacity>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={{ width: "100%" }}>
-          {datos && datos.length > 0 ? (
-            datos.map((item, idx) => (
-              <View key={idx} style={styles.row}>
-                <View style={styles.column1}>
-                  <Text
-                    numberOfLines={2}
-                    ellipsizeMode="tail"
-                    style={styles.cell}
-                  >
-                    {item.motivo || item.nombre || item.descripcion || "Sin descripción"}
-                  </Text>
-                </View>
-
-                <View style={styles.column2}>
-                  <Text style={styles.fecha}>{formatearFecha(item.fecha)}</Text>
-                </View>
-
-                <View style={styles.column3}>
-                  <TouchableOpacity
-                    style={styles.editButton}
-                    onPress={() => onEditar(item._id)}
-                  >
-                    <FontAwesome5 name="edit" size={16} color="#007bff" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))
-          ) : (
-            <Text style={styles.noData}>
-              Aún no hay registros para esta sección
+      {datos && datos.length > 0 ? (
+        datos.map((item, idx) => (
+          <View key={idx} style={styles.row}>
+            <Text style={styles.cell}>
+              {item.nombre ||
+                item.motivo ||
+                item.producto ||
+                item.tipo ||
+                (item.fecha ? formatearFecha(item.fecha) : "") ||
+                item.descripcion ||
+                "Registro sin descripción"}
             </Text>
-          )}
-        </View>
-      </ScrollView>
+          </View>
+        ))
+      ) : (
+        <Text style={styles.noData}>Aún no hay registros en esta sección</Text>
+      )}
     </View>
   );
 }
@@ -272,9 +268,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ddd",
   },
-  image: { width: 170, height: 170, borderRadius: 85, marginBottom: 10 },
-  petName: { fontSize: 22, fontWeight: "bold", marginBottom: 5 },
-  petData: { fontSize: 16, color: "#444", marginVertical: 2 },
+  image: {
+    width: 170,
+    height: 170,
+    borderRadius: 85,
+    marginBottom: 10,
+  },
+  petName: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  petData: {
+    fontSize: 16,
+    color: "#444",
+    marginVertical: 2,
+  },
   description: {
     marginTop: 10,
     fontStyle: "italic",
@@ -295,7 +304,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 8,
   },
-  tableTitle: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  tableTitle: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
   addButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -304,34 +317,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 6,
   },
-  addButtonText: { color: "#fff", fontSize: 13, marginLeft: 5 },
+  addButtonText: {
+    color: "#fff",
+    fontSize: 13,
+    marginLeft: 5,
+  },
   row: {
-    flexDirection: "row",
-    alignItems: "center",
+    padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
-    paddingVertical: 8,
-    paddingHorizontal: 5,
-    width: 325, // 🔹 ancho total desplazable
   },
-  column1: { flex: 2, paddingRight: 2, minWidth: 50 },
-  column2: { flex: 1, alignItems: "center", minWidth: 50 },
-  column3: { flex: 0.5, alignItems: "center", minWidth: 50 },
   cell: { fontSize: 14, color: "#333" },
-  fecha: { fontSize: 13, color: "#777" },
-  editButton: {
-    padding: 6,
-    borderRadius: 6,
-    backgroundColor: "#e6f0ff",
-  },
   noData: {
     padding: 10,
     textAlign: "center",
     color: "#777",
     fontStyle: "italic",
   },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  errorContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   errorText: {
     marginTop: 10,
     color: "#ff4444",
