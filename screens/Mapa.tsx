@@ -4,151 +4,157 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  PermissionsAndroid,
-  Platform,
+  Alert,
 } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
-import Geolocation from "@react-native-community/geolocation";
 
-// 📍 Tipo de coordenada
+import * as Location from "expo-location";
+import { useNavigation } from "@react-navigation/native";
+import { FontAwesome5 } from "@expo/vector-icons";
+
 type Coordinate = {
   latitude: number;
   longitude: number;
 };
 
-export default function LiveLocationMap() {
+export default function Mapa() {
+  const navigation = useNavigation();
   const [location, setLocation] = useState<Coordinate | null>(null);
   const [path, setPath] = useState<Coordinate[]>([]);
   const [watching, setWatching] = useState(false);
-  const watchId = useRef<number | null>(null);
+  const watcher = useRef<Location.LocationSubscription | null>(null);
 
+  // 🔹 Solicitar permiso y obtener ubicación inicial
   useEffect(() => {
-    requestPermission();
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permiso denegado", "Activa la ubicación para usar el mapa.");
+        return;
+      }
+
+      const current = await Location.getCurrentPositionAsync({});
+      const initial = {
+        latitude: current.coords.latitude,
+        longitude: current.coords.longitude,
+      };
+      setLocation(initial);
+      setPath([initial]);
+    })();
+
+    return () => stopWatching();
   }, []);
 
-  // ✅ Pedir permiso de ubicación
-  const requestPermission = async () => {
-    if (Platform.OS === "android") {
-      await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-      );
+  // ▶️ Iniciar seguimiento en tiempo real
+  const startWatching = async () => {
+    if (watching) return;
+
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permiso denegado", "No se puede acceder a la ubicación.");
+      return;
     }
-  };
 
-  // ▶️ Iniciar seguimiento
-  const startTracking = () => {
-    if (watchId.current) return;
-    setWatching(true);
-
-    const id = Geolocation.watchPosition(
+    watcher.current = await Location.watchPositionAsync(
+      {
+        accuracy: Location.Accuracy.Highest,
+        timeInterval: 2000,
+        distanceInterval: 1,
+      },
       (pos) => {
-        const { latitude, longitude } = pos.coords;
-        const newLocation: Coordinate = { latitude, longitude };
+        const newLocation = {
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        };
         setLocation(newLocation);
         setPath((prev) => [...prev, newLocation]);
-      },
-      (err) => console.error("Error al obtener ubicación:", err),
-      {
-        enableHighAccuracy: true,
-        distanceFilter: 1,
-        interval: 2000,
-        fastestInterval: 1000,
       }
     );
 
-    // ⚙️ Asegurar que el tipo sea correcto
-    watchId.current = id as unknown as number;
+    setWatching(true);
   };
 
-  // ⏸️ Detener seguimiento
-  const stopTracking = () => {
-    if (watchId.current !== null) {
-      Geolocation.clearWatch(watchId.current);
-      watchId.current = null;
-      setWatching(false);
+  // ⏹️ Detener seguimiento
+  const stopWatching = () => {
+    if (watcher.current) {
+      watcher.current.remove();
+      watcher.current = null;
     }
+    setWatching(false);
   };
-
-  // 🗺️ Limpiar ruta
-  const clearPath = () => setPath([]);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>📍 Ubicación en tiempo real</Text>
+      <MapView
+        style={styles.map}
+        showsUserLocation={true}
+        region={
+          location
+            ? {
+                latitude: location.latitude,
+                longitude: location.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }
+            : undefined
+        }
+      >
+        {path.length > 1 && (
+          <Polyline coordinates={path} strokeColor="#1E90FF" strokeWidth={4} />
+        )}
+        {location && (
+          <Marker coordinate={location} title="Tu ubicación" pinColor="#1DB954" />
+        )}
+      </MapView>
 
-      {location ? (
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: location.latitude,
-            longitude: location.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }}
-          region={{
-            latitude: location.latitude,
-            longitude: location.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }}
-          showsUserLocation
-        >
-          <Marker coordinate={location} title="Tu ubicación" />
-          {path.length > 1 && (
-            <Polyline coordinates={path} strokeWidth={4} strokeColor="blue" />
-          )}
-        </MapView>
-      ) : (
-        <Text style={styles.text}>Esperando ubicación...</Text>
-      )}
+      {/* ▶️ Botón iniciar/detener */}
+      <TouchableOpacity
+        style={[
+          styles.trackButton,
+          { backgroundColor: watching ? "#e74c3c" : "#1DB954" },
+        ]}
+        onPress={watching ? stopWatching : startWatching}
+      >
+        <Text style={styles.trackButtonText}>
+          {watching ? "Detener seguimiento" : "Iniciar seguimiento"}
+        </Text>
+      </TouchableOpacity>
 
-      <View style={styles.controls}>
-        <TouchableOpacity
-          onPress={watching ? stopTracking : startTracking}
-          style={[
-            styles.button,
-            { backgroundColor: watching ? "red" : "green" },
-          ]}
-        >
-          <Text style={styles.buttonText}>
-            {watching ? "Detener" : "Iniciar"}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={clearPath} style={styles.buttonClear}>
-          <Text style={styles.buttonText}>Limpiar ruta</Text>
-        </TouchableOpacity>
-      </View>
+      {/* 🏠 Botón volver al Home */}
+      <TouchableOpacity
+        style={styles.homeButton}
+        onPress={() => navigation.navigate("Home" as never)}
+      >
+        <FontAwesome5 name="home" size={20} color="#fff" />
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  title: { fontSize: 18, fontWeight: "bold", margin: 10, textAlign: "center" },
+  container: { flex: 1 },
   map: { flex: 1 },
-  text: { textAlign: "center", marginTop: 20 },
-  controls: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    padding: 10,
-    backgroundColor: "#f0f0f0",
-  },
-  button: {
-    padding: 10,
+  trackButton: {
+    position: "absolute",
+    bottom: 40,
+    alignSelf: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 10,
-    minWidth: 100,
-    alignItems: "center",
+    elevation: 5,
   },
-  buttonClear: {
-    backgroundColor: "#555",
-    padding: 10,
-    borderRadius: 10,
-    minWidth: 100,
-    alignItems: "center",
-  },
-  buttonText: {
+  trackButtonText: {
     color: "#fff",
+    fontSize: 16,
     fontWeight: "bold",
+  },
+  homeButton: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    backgroundColor: "#1DB954",
+    padding: 10,
+    borderRadius: 50,
+    elevation: 5,
   },
 });

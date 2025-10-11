@@ -42,7 +42,7 @@ export default function Notificaciones() {
   const [loading, setLoading] = useState(false);
   const [soloPendientes, setSoloPendientes] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "Home" | "Profile" | "Mascotas" | "MisionVision" | "Notificaciones"
+    "Home" | "Profile" | "MisMascotas" | "MisionVision" | "Notificaciones"
   >("Notificaciones");
 
   // 🔹 Cargar usuario desde AsyncStorage

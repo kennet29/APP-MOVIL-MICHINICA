@@ -27,7 +27,7 @@ export default function HomeScreen({ navigation }: any) {
   >("Home");
 
   const titleScale = useRef(new Animated.Value(0)).current;
-  const cardsAnim = useRef([0, 1, 2, 3, 4, 5].map(() => new Animated.Value(0))).current;
+  const cardsAnim = useRef([0, 1, 2, 3, 4, 5, 6].map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
     if (Platform.OS === "android") {
@@ -52,14 +52,7 @@ export default function HomeScreen({ navigation }: any) {
 
   if (!fontsLoaded) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#329bd7",
-        }}
-      >
+      <View style={styles.loading}>
         <ActivityIndicator size="large" color="#fff" />
       </View>
     );
@@ -73,20 +66,31 @@ export default function HomeScreen({ navigation }: any) {
   };
 
   const handleCardPress = (cardName: string) => {
-    if (cardName === "GUIAS") {
-      navigation.navigate("Guia");
-    } else if (cardName === "MASCOTAS PERDIDAS") {
-      navigation.navigate("MascotasPerdidas");
-    } else if (cardName === "EVENTOS") {
-      navigation.navigate("Eventos");
-    } else if (cardName === "MAPA") {
-      navigation.navigate("Mapa"); // 👈 Nueva card redirige aquí
-    } else {
-      console.log(`Card ${cardName} presionada`);
+    switch (cardName) {
+      case "POST":
+      navigation.navigate("Publicaciones"); // ✅ Nueva navegación
+      break;
+      case "GUIAS":
+        navigation.navigate("Guia");
+        break;
+      case "MASCOTAS PERDIDAS":
+        navigation.navigate("MascotasPerdidas");
+        break;
+      case "EVENTOS":
+        navigation.navigate("Eventos");
+        break;
+      case "MAPA":
+        navigation.navigate("Mapa");
+        break;
+      case "PRESUPUESTOS":
+        navigation.navigate("Presupuestos"); // 👈 Nueva navegación
+        break;
+      default:
+        console.log(`Card ${cardName} presionada`);
     }
   };
 
-  const cardColors = ["#e87170", "#f49953", "#9d7bb6", "#00BFFF", "#FFA500", "#32CD32"];
+  const cardColors = ["#e87170", "#f49953", "#9d7bb6", "#00BFFF", "#FFA500", "#32CD32", "#6A5ACD"];
 
   const cardData = [
     { name: "POST", color: cardColors[0], icon: <FontAwesome5 name="edit" size={28} color="#fff" /> },
@@ -111,9 +115,14 @@ export default function HomeScreen({ navigation }: any) {
       icon: <FontAwesome5 name="book" size={28} color="#fff" />,
     },
     {
-      name: "MAPA", // 👈 Nueva card
+      name: "MAPA",
       color: cardColors[5],
       icon: <FontAwesome5 name="map-marked-alt" size={28} color="#fff" />,
+    },
+    {
+      name: "PRESUPUESTOS", // 💰 Nueva Card
+      color: cardColors[6],
+      icon: <FontAwesome5 name="wallet" size={28} color="#fff" />,
     },
   ];
 
@@ -132,7 +141,8 @@ export default function HomeScreen({ navigation }: any) {
       <StatusBar hidden />
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.content}>
-          <View style={{ flexDirection: "row", justifyContent: "center", marginBottom: 20 }}>
+          {/* 🔹 Título Animado */}
+          <View style={styles.titleContainer}>
             {titleLetters.map((item, index) => (
               <Animated.Text
                 key={index}
@@ -143,6 +153,7 @@ export default function HomeScreen({ navigation }: any) {
             ))}
           </View>
 
+          {/* 🔹 Cards */}
           <View style={styles.cardsContainer}>
             {cardData.map((card, index) => (
               <Animated.View
@@ -181,6 +192,7 @@ export default function HomeScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#FFFF" },
   content: { padding: 20, paddingTop: 60, paddingBottom: 120 },
+  titleContainer: { flexDirection: "row", justifyContent: "center", marginBottom: 20 },
   title: { fontSize: 40, marginBottom: 20, textAlign: "center", fontFamily: "Poppins_Bold" },
   cardsContainer: { flexDirection: "column", justifyContent: "flex-start" },
   card: {
@@ -195,6 +207,18 @@ const styles = StyleSheet.create({
     elevation: 3,
     alignItems: "center",
   },
-  cardTitle: { fontSize: 18, marginTop: 10, fontFamily: "Poppins_Bold", color: "#fff", textAlign: "center" },
+  cardTitle: {
+    fontSize: 18,
+    marginTop: 10,
+    fontFamily: "Poppins_Bold",
+    color: "#fff",
+    textAlign: "center",
+  },
   cardText: { fontFamily: "Poppins_Regular", color: "#fff", textAlign: "center" },
+  loading: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#329bd7",
+  },
 });

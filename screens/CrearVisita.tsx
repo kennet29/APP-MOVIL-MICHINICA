@@ -11,93 +11,83 @@ import {
   ActivityIndicator,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Picker } from "@react-native-picker/picker"; // ✅ NUEVA IMPORTACIÓN
 import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../App";
 
-type CrearDesparasitacionRouteProp = RouteProp<
-  RootStackParamList,
-  "CrearDesparasitacion"
->;
+type CrearVisitaRouteProp = RouteProp<RootStackParamList, "CrearVisita">;
 
-export default function CrearDesparasitacion() {
-  const route = useRoute<CrearDesparasitacionRouteProp>();
+export default function CrearVisita() {
+  const route = useRoute<CrearVisitaRouteProp>();
   const navigation = useNavigation<any>();
-  const { mascotaId, desparasitacionId } = route.params || {};
-  const [producto, setProducto] = useState("");
-  const [dosis, setDosis] = useState("");
-  const [tipo, setTipo] = useState("interna"); // Valor inicial
+  const { mascotaId, visitaId } = route.params || {}; // 📩 Recibe mascotaId como parámetro
+
+  const [motivo, setMotivo] = useState("");
   const [fecha, setFecha] = useState<Date>(new Date());
-  const [proxima, setProxima] = useState<Date | null>(null);
-  const [notas, setNotas] = useState("");
   const [mostrarPickerFecha, setMostrarPickerFecha] = useState(false);
-  const [mostrarPickerProxima, setMostrarPickerProxima] = useState(false);
   const [loading, setLoading] = useState(false);
   const [modoEditar, setModoEditar] = useState(false);
 
-  const API_BASE = "https://backendmaguey.onrender.com/api/desparacitaciones";
+  const API_BASE = "https://backendmaguey.onrender.com/api/visitas";
 
+  // 📌 Si hay visitaId => modo edición
   useEffect(() => {
-    const fetchDesparasitacion = async () => {
-      if (!desparasitacionId) return;
+    const fetchVisita = async () => {
+      if (!visitaId) return;
       setModoEditar(true);
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/${desparasitacionId}`);
-        if (!res.ok) throw new Error("No se pudo obtener el registro.");
+        const res = await fetch(`${API_BASE}/${visitaId}`);
+        if (!res.ok) throw new Error("No se pudo obtener la visita.");
         const data = await res.json();
-        setProducto(data.producto || "");
-        setDosis(data.dosis || "");
-        setTipo(data.tipo || "interna");
+        setMotivo(data.motivo || "");
         if (data.fecha) setFecha(new Date(data.fecha));
-        if (data.proxima) setProxima(new Date(data.proxima));
-        setNotas(data.notas || "");
       } catch (error: any) {
-        console.error("❌ Error cargando desparasitación:", error);
-        Alert.alert("Error", "No se pudo cargar la información del registro.");
+        console.error("❌ Error cargando visita:", error);
+        Alert.alert("Error", "No se pudo cargar la información de la visita.");
       } finally {
         setLoading(false);
       }
     };
-    fetchDesparasitacion();
-  }, [desparasitacionId]);
+    fetchVisita();
+  }, [visitaId]);
 
+  // 📌 Crear o actualizar visita
   const handleSubmit = async () => {
-    if (!producto.trim() || !dosis.trim() || !tipo.trim() || !fecha) {
+    if (!motivo.trim() || !fecha) {
       Alert.alert("Campos requeridos", "Completa todos los campos obligatorios.");
       return;
     }
+
     try {
       setLoading(true);
       const payload = {
-        mascotaId,
-        producto: producto.trim(),
-        dosis: dosis.trim(),
-        tipo,
+        motivo: motivo.trim(),
         fecha,
-        proxima,
-        notas: notas.trim(),
+        mascotaId,
       };
+
       const res = await fetch(
-        modoEditar ? `${API_BASE}/${desparasitacionId}` : `${API_BASE}`,
+        modoEditar ? `${API_BASE}/${visitaId}` : `${API_BASE}`,
         {
           method: modoEditar ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         }
       );
+
       const data = await res.json();
+
       if (res.ok) {
         Alert.alert(
-          modoEditar ? "✅ Desparasitación actualizada" : "✅ Desparasitación registrada",
+          modoEditar ? "✅ Visita actualizada" : "✅ Visita registrada",
           modoEditar
             ? "Los cambios se guardaron correctamente."
-            : "El registro se creó con éxito."
+            : "La visita se registró con éxito."
         );
         navigation.goBack();
       } else {
         console.error("❌ Error al guardar:", data);
-        Alert.alert("Error", data.message || "No se pudo guardar el registro.");
+        Alert.alert("Error", data.message || "No se pudo guardar la visita.");
       }
     } catch (error: any) {
       console.error("❌ Error al conectar:", error);
@@ -107,11 +97,12 @@ export default function CrearDesparasitacion() {
     }
   };
 
+  // 📍 Loading si está editando
   if (loading && modoEditar) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#673AB7" />
-        <Text style={{ marginTop: 10 }}>Cargando datos...</Text>
+        <ActivityIndicator size="large" color="#03A9F4" />
+        <Text style={{ marginTop: 10 }}>Cargando visita...</Text>
       </View>
     );
   }
@@ -119,36 +110,21 @@ export default function CrearDesparasitacion() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>
-        {modoEditar ? "Editar Desparasitación" : "Registrar Desparasitación"}
+        {modoEditar ? "Editar Visita Médica" : "Registrar Nueva Visita"}
       </Text>
 
-      <Text style={styles.label}>🧴 Producto</Text>
+      {/* Campo motivo */}
+      <Text style={styles.label}>🩺 Motivo de la visita</Text>
       <TextInput
-        style={styles.input}
-        placeholder="Ej. Drontal, Ivermectina, etc."
-        value={producto}
-        onChangeText={setProducto}
+        style={[styles.input, { height: 100, textAlignVertical: "top" }]}
+        placeholder="Ej. Control general, revisión postoperatoria, chequeo anual..."
+        multiline
+        value={motivo}
+        onChangeText={setMotivo}
       />
 
-      <Text style={styles.label}>💊 Dosis</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Ej. 5 ml/kg o 1 tableta"
-        value={dosis}
-        onChangeText={setDosis}
-      />
-
-      {/* ✅ Campo tipo limitado a interna/externa */}
-      <Text style={styles.label}>🧬 Tipo</Text>
-      <View style={styles.pickerContainer}>
-        <Picker selectedValue={tipo} onValueChange={setTipo}>
-          <Picker.Item label="Interna" value="interna" />
-          <Picker.Item label="Externa" value="externa" />
-        </Picker>
-      </View>
-
-      {/* Fecha de aplicación */}
-      <Text style={styles.label}>📅 Fecha de aplicación</Text>
+      {/* Campo fecha */}
+      <Text style={styles.label}>📅 Fecha de la visita</Text>
       <TouchableOpacity
         style={styles.dateButton}
         onPress={() => setMostrarPickerFecha(true)}
@@ -168,40 +144,7 @@ export default function CrearDesparasitacion() {
         />
       )}
 
-      {/* Próxima desparasitación */}
-      <Text style={styles.label}>📆 Próxima desparasitación (opcional)</Text>
-      <TouchableOpacity
-        style={styles.dateButton}
-        onPress={() => setMostrarPickerProxima(true)}
-      >
-        <Text style={styles.dateText}>
-          {proxima
-            ? proxima.toLocaleDateString("es-ES")
-            : "Seleccionar fecha (opcional)"}
-        </Text>
-      </TouchableOpacity>
-
-      {mostrarPickerProxima && (
-        <DateTimePicker
-          value={proxima || new Date()}
-          mode="date"
-          display={Platform.OS === "ios" ? "spinner" : "default"}
-          onChange={(event, selectedDate) => {
-            setMostrarPickerProxima(false);
-            if (selectedDate) setProxima(selectedDate);
-          }}
-        />
-      )}
-
-      <Text style={styles.label}>📝 Notas (opcional)</Text>
-      <TextInput
-        style={[styles.input, { height: 100, textAlignVertical: "top" }]}
-        placeholder="Detalles adicionales o recordatorios"
-        multiline
-        value={notas}
-        onChangeText={setNotas}
-      />
-
+      {/* Botones */}
       <TouchableOpacity
         style={[styles.button, loading && { opacity: 0.6 }]}
         onPress={handleSubmit}
@@ -212,7 +155,7 @@ export default function CrearDesparasitacion() {
             ? "Guardando..."
             : modoEditar
             ? "Guardar Cambios"
-            : "Guardar Desparasitación"}
+            : "Guardar Visita"}
         </Text>
       </TouchableOpacity>
 
@@ -244,13 +187,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     backgroundColor: "#f9f9f9",
   },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    overflow: "hidden",
-    backgroundColor: "#f9f9f9",
-  },
   dateButton: {
     borderWidth: 1,
     borderColor: "#ccc",
@@ -260,7 +196,7 @@ const styles = StyleSheet.create({
   },
   dateText: { fontSize: 15, color: "#333" },
   button: {
-    backgroundColor: "#673AB7",
+    backgroundColor: "#03A9F4",
     padding: 14,
     borderRadius: 10,
     marginTop: 30,

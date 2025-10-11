@@ -55,19 +55,12 @@ export default function HistorialMedicoMascota() {
       const fetchSafe = async (key: string, url: string) => {
         try {
           const res = await fetch(url);
-          if (!res.ok) {
-            console.warn(`⚠️ [${key}] devolvió status ${res.status}`);
-            return [];
-          }
+          if (!res.ok) return [];
           const contentType = res.headers.get("content-type");
-          if (!contentType?.includes("application/json")) {
-            console.warn(`⚠️ [${key}] devolvió contenido no JSON`);
-            return [];
-          }
+          if (!contentType?.includes("application/json")) return [];
           const data = await res.json();
           return Array.isArray(data) ? data : [data];
-        } catch (err: any) {
-          console.warn(`⚠️ Error al obtener ${key}:`, err.message);
+        } catch {
           return [];
         }
       };
@@ -95,8 +88,6 @@ export default function HistorialMedicoMascota() {
         setDesparasitaciones(dataDesparas);
         setEnfermedades(dataEnfer);
         setVisitas(dataVisitas);
-      } catch (error) {
-        console.error("❌ Error general al cargar historial:", error);
       } finally {
         setLoading(false);
       }
@@ -113,33 +104,28 @@ export default function HistorialMedicoMascota() {
     return edad > 0 ? `${edad} años` : "Menos de 1 año";
   };
 
-  if (loading) {
+  if (loading)
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#007bff" />
         <Text style={{ marginTop: 10 }}>Cargando historial médico...</Text>
       </View>
     );
-  }
 
-  if (!mascota) {
+  if (!mascota)
     return (
       <View style={styles.errorContainer}>
         <FontAwesome5 name="exclamation-triangle" size={40} color="#ff4444" />
         <Text style={styles.errorText}>No se encontró la mascota</Text>
       </View>
     );
-  }
 
   const fotoUrl = mascota.fotoPerfilId
     ? `https://backendmaguey.onrender.com/api/mascotas/foto/${mascota.fotoPerfilId}`
     : "https://via.placeholder.com/300x200.png?text=Sin+Foto";
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ paddingBottom: 100 }}
-    >
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
       <Text style={styles.title}>Historial médico de {mascota.nombre}</Text>
 
       {/* 📸 Información de la mascota */}
@@ -149,12 +135,8 @@ export default function HistorialMedicoMascota() {
         <Text style={styles.petData}>🐾 Especie: {mascota.especie}</Text>
         <Text style={styles.petData}>🧬 Raza: {mascota.raza || "N/D"}</Text>
         <Text style={styles.petData}>⚧ Sexo: {mascota.sexo}</Text>
-        <Text style={styles.petData}>
-          🎂 Edad: {calcularEdad(mascota.cumpleaños)}
-        </Text>
-        {mascota.descripcion ? (
-          <Text style={styles.description}>📝 {mascota.descripcion}</Text>
-        ) : null}
+        <Text style={styles.petData}>🎂 Edad: {calcularEdad(mascota.cumpleaños)}</Text>
+        {mascota.descripcion && <Text style={styles.description}>📝 {mascota.descripcion}</Text>}
       </View>
 
       {/* 🔹 Secciones médicas */}
@@ -163,6 +145,7 @@ export default function HistorialMedicoMascota() {
         datos={vacunas}
         color="#4CAF50"
         onAgregar={() => navigation.navigate("CrearVacuna", { mascotaId })}
+        onEditar={(id) => navigation.navigate("EditarVacuna", { mascotaId, vacunaId: id })}
       />
 
       <Tabla
@@ -170,14 +153,16 @@ export default function HistorialMedicoMascota() {
         datos={operaciones}
         color="#FF9800"
         onAgregar={() => navigation.navigate("CrearOperacion", { mascotaId })}
+        onEditar={(id) => navigation.navigate("EditarOperacion", { mascotaId, operacionId: id })}
       />
 
       <Tabla
         titulo="🪱 Desparasitaciones"
         datos={desparasitaciones}
         color="#673AB7"
-        onAgregar={() =>
-          navigation.navigate("CrearDesparasitacion", { mascotaId })
+        onAgregar={() => navigation.navigate("CrearDesparasitacion", { mascotaId })}
+        onEditar={(id) =>
+          navigation.navigate("EditarDesparasitacion", { mascotaId, desparasitacionId: id })
         }
       />
 
@@ -186,6 +171,7 @@ export default function HistorialMedicoMascota() {
         datos={enfermedades}
         color="#E91E63"
         onAgregar={() => navigation.navigate("CrearEnfermedad", { mascotaId })}
+        onEditar={(id) => navigation.navigate("EditarEnfermedad", { mascotaId, enfermedadId: id })}
       />
 
       <Tabla
@@ -193,6 +179,7 @@ export default function HistorialMedicoMascota() {
         datos={visitas}
         color="#03A9F4"
         onAgregar={() => navigation.navigate("CrearVisita", { mascotaId })}
+        onEditar={(id) => navigation.navigate("EditarVisita", { mascotaId, visitaId: id })}
       />
     </ScrollView>
   );
@@ -204,16 +191,17 @@ function Tabla({
   datos,
   color,
   onAgregar,
+  onEditar,
 }: {
   titulo: string;
   datos?: any[];
   color: string;
   onAgregar: () => void;
+  onEditar: (id: string) => void;
 }) {
   const formatearFecha = (f: string) => {
     try {
-      const d = new Date(f);
-      return d.toLocaleDateString("es-ES");
+      return new Date(f).toLocaleDateString("es-ES");
     } catch {
       return f;
     }
@@ -232,15 +220,28 @@ function Tabla({
       {datos && datos.length > 0 ? (
         datos.map((item, idx) => (
           <View key={idx} style={styles.row}>
-            <Text style={styles.cell}>
-              {item.nombre ||
-                item.motivo ||
-                item.producto ||
-                item.tipo ||
-                (item.fecha ? formatearFecha(item.fecha) : "") ||
-                item.descripcion ||
-                "Registro sin descripción"}
-            </Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.cell}>
+                {item.nombre ||
+                  item.motivo ||
+                  item.producto ||
+                  item.tipo ||
+                  item.descripcion ||
+                  "Registro sin descripción"}
+              </Text>
+              {item.fecha || item.createdAt ? (
+                <Text style={styles.fecha}>
+                  📅 {formatearFecha(item.fecha || item.createdAt)}
+                </Text>
+              ) : null}
+            </View>
+
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => onEditar(item._id)}
+            >
+              <FontAwesome5 name="edit" size={16} color="#007bff" />
+            </TouchableOpacity>
           </View>
         ))
       ) : (
@@ -252,13 +253,7 @@ function Tabla({
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 25,
-    textAlign: "center",
-    color: "#222",
-  },
+  title: { fontSize: 24, fontWeight: "bold", marginBottom: 25, textAlign: "center", color: "#222" },
   card: {
     alignItems: "center",
     backgroundColor: "#f5f5f5",
@@ -268,86 +263,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ddd",
   },
-  image: {
-    width: 170,
-    height: 170,
-    borderRadius: 85,
-    marginBottom: 10,
-  },
-  petName: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 5,
-  },
-  petData: {
-    fontSize: 16,
-    color: "#444",
-    marginVertical: 2,
-  },
-  description: {
-    marginTop: 10,
-    fontStyle: "italic",
-    color: "#555",
-    textAlign: "center",
-  },
-  table: {
-    marginBottom: 25,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    overflow: "hidden",
-  },
-  tableHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-  },
-  tableTitle: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  addButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#00000033",
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-  },
-  addButtonText: {
-    color: "#fff",
-    fontSize: 13,
-    marginLeft: 5,
-  },
-  row: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
+  image: { width: 170, height: 170, borderRadius: 85, marginBottom: 10 },
+  petName: { fontSize: 22, fontWeight: "bold", marginBottom: 5 },
+  petData: { fontSize: 16, color: "#444", marginVertical: 2 },
+  description: { marginTop: 10, fontStyle: "italic", color: "#555", textAlign: "center" },
+  table: { marginBottom: 25, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, overflow: "hidden" },
+  tableHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10, paddingVertical: 8 },
+  tableTitle: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  addButton: { flexDirection: "row", alignItems: "center", backgroundColor: "#00000033", paddingVertical: 3, paddingHorizontal: 8, borderRadius: 6 },
+  addButtonText: { color: "#fff", fontSize: 13, marginLeft: 5 },
+  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 10, borderBottomWidth: 1, borderBottomColor: "#eee" },
   cell: { fontSize: 14, color: "#333" },
-  noData: {
-    padding: 10,
-    textAlign: "center",
-    color: "#777",
-    fontStyle: "italic",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  errorText: {
-    marginTop: 10,
-    color: "#ff4444",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
+  fecha: { fontSize: 12, color: "#777", marginTop: 3 },
+  editButton: { padding: 6 },
+  noData: { padding: 10, textAlign: "center", color: "#777", fontStyle: "italic" },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  errorContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  errorText: { marginTop: 10, color: "#ff4444", fontSize: 16, fontWeight: "bold" },
 });
