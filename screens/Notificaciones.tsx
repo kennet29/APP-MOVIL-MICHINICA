@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -27,8 +27,6 @@ export default function Notificaciones() {
   const API_BASE = "https://backendmaguey.onrender.com/api/notificaciones";
 
   const [usuarioId, setUsuarioId] = useState<string | null>(null);
-
-  // 🔹 Estado inicial ya trae la notificación de prueba
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([
     {
       _id: "demo-peces",
@@ -38,14 +36,12 @@ export default function Notificaciones() {
       mascotaId: { nombre: "Peces" },
     },
   ]);
-
   const [loading, setLoading] = useState(false);
   const [soloPendientes, setSoloPendientes] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "Home" | "Profile" | "MisMascotas" | "MisionVision" | "Notificaciones"
   >("Notificaciones");
 
-  // 🔹 Cargar usuario desde AsyncStorage
   useEffect(() => {
     const loadUsuario = async () => {
       try {
@@ -61,7 +57,7 @@ export default function Notificaciones() {
     loadUsuario();
   }, []);
 
-  const fetchNotificaciones = async () => {
+  const fetchNotificaciones = useCallback(async () => {
     if (!usuarioId) return;
     setLoading(true);
     try {
@@ -72,8 +68,7 @@ export default function Notificaciones() {
       const res = await fetch(url);
       const data = await res.json();
 
-      // 🔹 Agregamos la demo al inicio de la lista, sin tocar el backend
-      setNotificaciones((prev) => [
+      setNotificaciones([
         {
           _id: "demo-peces",
           mensaje: "Hora de alimentar a tus peces 🐟",
@@ -88,22 +83,77 @@ export default function Notificaciones() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [usuarioId, soloPendientes]);
 
   useEffect(() => {
-    if (usuarioId) {
-      fetchNotificaciones();
-    }
-  }, [soloPendientes, usuarioId]);
+    if (usuarioId) fetchNotificaciones();
+  }, [fetchNotificaciones, usuarioId]);
+
+  // 🔹 Render de cada notificación
+  const renderItem = ({ item, index }: { item: Notificacion; index: number }) => (
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: item.leida
+            ? "#f5f6fa"
+            : colors[index % colors.length] + "22",
+          borderLeftColor: item.leida
+            ? "#7f8c8d"
+            : colors[index % colors.length],
+        },
+      ]}
+    >
+      <View style={{ flex: 1 }}>
+        <Text style={styles.mensaje}>
+          <Text style={{ fontWeight: "bold" }}>
+            {item.mascotaId?.nombre || "General"}:{" "}
+          </Text>
+          {item.mensaje}
+        </Text>
+
+        <Text style={styles.fecha}>
+          {new Date(item.createdAt).toLocaleString()}
+        </Text>
+
+        {/* 🔘 Botón individual para marcar como leída */}
+        {!item.leida && (
+          <TouchableOpacity
+            style={styles.markButton}
+            onPress={async () => {
+              try {
+                const res = await fetch(`${API_BASE}/${item._id}/leida`, {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                });
+
+                if (res.ok) {
+                  setNotificaciones((prev) =>
+                    prev.map((n) =>
+                      n._id === item._id ? { ...n, leida: true } : n
+                    )
+                  );
+                }
+              } catch (error) {
+                console.error("Error al marcar notificación como leída:", error);
+              }
+            }}
+          >
+            <Text style={styles.markButtonText}>Marcar leída</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
-      {/* 🔹 Encabezado con Zoonica */}
+      {/* 🔹 Encabezado */}
       <View style={styles.header}>
-        <ZoonicaTitle size={40} />
+        <ZoonicaTitle size={42} />
       </View>
 
-      {/* Botón de filtro */}
+      {/* 🔹 Botón de filtro */}
       <TouchableOpacity
         style={styles.filterButton}
         onPress={() => setSoloPendientes(!soloPendientes)}
@@ -113,45 +163,20 @@ export default function Notificaciones() {
         </Text>
       </TouchableOpacity>
 
+      {/* 🔹 Lista */}
       {loading ? (
-        <ActivityIndicator size="large" color="#1DB954" />
+        <ActivityIndicator size="large" color="#1DB954" style={{ marginTop: 20 }} />
       ) : (
         <FlatList
           data={notificaciones}
           keyExtractor={(item) => item._id}
-          contentContainerStyle={{ paddingBottom: 120 }}
-          renderItem={({ item, index }) => (
-            <View
-              style={[
-                styles.card,
-                {
-                  backgroundColor: item.leida
-                    ? "#ecf0f1"
-                    : colors[index % colors.length] + "33",
-                  borderLeftWidth: 6,
-                  borderLeftColor: item.leida
-                    ? "#7f8c8d"
-                    : colors[index % colors.length],
-                },
-              ]}
-            >
-              <View>
-                <Text style={styles.mensaje}>
-                  <Text style={{ fontWeight: "bold" }}>
-                    {item.mascotaId?.nombre || "General"}:{" "}
-                  </Text>
-                  {item.mensaje}
-                </Text>
-                <Text style={styles.fecha}>
-                  {new Date(item.createdAt).toLocaleString()}
-                </Text>
-              </View>
-            </View>
-          )}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 120, paddingTop: 5 }}
         />
       )}
 
-      {/* Menú inferior centrado */}
+      {/* 🔹 Menú inferior */}
       <View style={styles.menuContainer}>
         <BottomMenu activeTab={activeTab} onTabPress={setActiveTab} />
       </View>
@@ -170,25 +195,45 @@ const colors = [
 ];
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 20 },
-  header: { alignItems: "center", marginBottom: 15 },
+  container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 20 },
+  header: { alignItems: "center", marginVertical: 10 },
   filterButton: {
     backgroundColor: "#1DB954",
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 15,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
     alignSelf: "flex-start",
+    marginBottom: 15,
   },
   filterText: { color: "#fff", fontWeight: "bold" },
   card: {
     padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#ddd",
+    marginBottom: 18,
+    borderLeftWidth: 6,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 3,
   },
-  mensaje: { fontSize: 16, marginBottom: 5 },
-  fecha: { fontSize: 12, color: "#666" },
+  mensaje: { fontSize: 16, color: "#2c3e50", marginBottom: 6 },
+  fecha: { fontSize: 12, color: "#7f8c8d" },
+  markButton: {
+    backgroundColor: "#1DB954",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    alignSelf: "flex-start",
+    marginTop: 8,
+  },
+  markButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 13,
+  },
   menuContainer: {
     position: "absolute",
     bottom: 25,
