@@ -10,6 +10,7 @@ import {
   RefreshControl,
   Dimensions,
   Alert,
+  TextInput,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -31,6 +32,7 @@ type Usuario = {
 type Comentario = {
   comentario: string;
   usuarioId: Usuario;
+  fecha?: string;
 };
 
 type Publicacion = {
@@ -43,11 +45,13 @@ type Publicacion = {
   fecha?: string;
 };
 
-export default function Publicaciones({ navigation }: any) {
+export default function Publicaciones() {
   const [publicaciones, setPublicaciones] = useState<Publicacion[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [usuarioId, setUsuarioId] = useState<string | null>(null);
+  const [comentariosVisibles, setComentariosVisibles] = useState<string | null>(null);
+  const [nuevoComentario, setNuevoComentario] = useState("");
 
   const [fontsLoaded] = useFonts({
     Poppins_Regular: Poppins_400Regular,
@@ -59,15 +63,12 @@ export default function Publicaciones({ navigation }: any) {
     cargarPublicaciones();
   }, []);
 
-  // 🧠 Leer el usuario guardado con la clave "usuario" (opción 2)
   const obtenerUsuario = async () => {
     try {
       const storedUser = await AsyncStorage.getItem("usuario");
       if (storedUser) {
         const parsed = JSON.parse(storedUser);
         setUsuarioId(parsed._id);
-      } else {
-        console.warn("⚠️ No se encontró usuario en AsyncStorage");
       }
     } catch (error) {
       console.error("❌ Error al obtener usuario:", error);
@@ -93,16 +94,14 @@ export default function Publicaciones({ navigation }: any) {
     setRefreshing(false);
   };
 
-  // ❤️ Alternar like / unlike
+  // ❤️ Like / Unlike
   const handleLike = async (id: string) => {
+    if (!usuarioId) {
+      Alert.alert("Inicia sesión", "Debes iniciar sesión para dar like.");
+      return;
+    }
     try {
-      if (!usuarioId) {
-        Alert.alert("Inicia sesión", "Debes iniciar sesión para dar like.");
-        return;
-      }
-
       const payload = { usuarioId };
-
       const res = await fetch(
         `https://backendmaguey.onrender.com/api/publicaciones/${id}/like`,
         {
@@ -111,7 +110,6 @@ export default function Publicaciones({ navigation }: any) {
           body: JSON.stringify(payload),
         }
       );
-
       const data = await res.json();
       if (data.success) {
         setPublicaciones((prev) =>
@@ -134,44 +132,58 @@ export default function Publicaciones({ navigation }: any) {
     }
   };
 
-  // ➕ Navegar a CrearPublicacion (protegido por login)
-  const irACrearPublicacion = () => {
-    if (!usuarioId) {
-      Alert.alert("Inicia sesión", "Debes iniciar sesión para crear una publicación.");
-      return;
+  // 💬 Mostrar / Ocultar comentarios
+  const toggleComentarios = (id: string) => {
+    setComentariosVisibles((prev) => (prev === id ? null : id));
+  };
+
+  // 📝 Enviar nuevo comentario
+  const enviarComentario = async (pubId: string) => {
+    if (!usuarioId || nuevoComentario.trim() === "") return;
+    try {
+      const payload = { usuarioId, comentario: nuevoComentario };
+      const res = await fetch(
+        `https://backendmaguey.onrender.com/api/publicaciones/${pubId}/comentarios`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+      const data = await res.json();
+      if (data.success) {
+        setNuevoComentario("");
+        await cargarPublicaciones();
+      }
+    } catch (error) {
+      console.error("❌ Error al enviar comentario:", error);
     }
-    navigation.navigate("CrearPublicacion"); // <- cambia el nombre si tu ruta es distinta
   };
 
   if (!fontsLoaded || loading) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator size="large" color="#00BFFF" />
-        <Text style={{ color: "#555", marginTop: 10 }}>
-          Cargando publicaciones...
-        </Text>
+        <Text style={{ color: "#555", marginTop: 10 }}>Cargando publicaciones...</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      {/* Título */}
       <View style={styles.titleContainer}>
         <ZoonicaTitle size={42} />
       </View>
 
-      {/* Lista de publicaciones */}
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 100 }} // deja espacio para el FAB
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        contentContainerStyle={{ paddingBottom: 60 }}
       >
         {publicaciones.length === 0 ? (
           <Text style={styles.noPosts}>No hay publicaciones todavía 🐾</Text>
         ) : (
           publicaciones.map((pub) => (
             <View key={pub._id} style={styles.postContainer}>
-              {/* Cabecera */}
               <View style={styles.header}>
                 <FontAwesome5 name="user-circle" size={35} color="#444" />
                 <View style={{ marginLeft: 10 }}>
@@ -184,7 +196,6 @@ export default function Publicaciones({ navigation }: any) {
                 </View>
               </View>
 
-              {/* Imagen */}
               {pub.imagenes && pub.imagenes.length > 0 ? (
                 <Image
                   source={{
@@ -200,7 +211,6 @@ export default function Publicaciones({ navigation }: any) {
                 </View>
               )}
 
-              {/* Acciones */}
               <View style={styles.actions}>
                 <TouchableOpacity style={styles.actionButton} onPress={() => handleLike(pub._id)}>
                   <FontAwesome5
@@ -216,49 +226,67 @@ export default function Publicaciones({ navigation }: any) {
 
                 <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={() => navigation.navigate("Comentarios", { id: pub._id })}
+                  onPress={() => toggleComentarios(pub._id)}
                 >
                   <FontAwesome5 name="comment" size={22} color="#555" />
                 </TouchableOpacity>
               </View>
 
-              {/* Likes y contenido */}
               <Text style={styles.likesText}>
                 {pub.likes?.length || 0} {pub.likes?.length === 1 ? "like" : "likes"}
               </Text>
 
-              {pub.contenido ? (
+              {pub.contenido && (
                 <Text style={styles.caption}>
                   <Text style={{ fontFamily: "Poppins_Bold" }}>
                     {pub.usuarioId?.username || "Usuario"}:{" "}
                   </Text>
                   {pub.contenido}
                 </Text>
-              ) : null}
+              )}
 
-              {pub.comentarios && pub.comentarios.length > 0 && (
-                <TouchableOpacity onPress={() => navigation.navigate("Comentarios", { id: pub._id })}>
-                  <Text style={styles.commentLink}>
-                    Ver los {pub.comentarios.length} comentarios
-                  </Text>
-                </TouchableOpacity>
+              {/* 🔽 Sección de comentarios visible */}
+              {comentariosVisibles === pub._id && (
+                <View style={styles.commentSection}>
+                  {pub.comentarios && pub.comentarios.length > 0 ? (
+                    pub.comentarios.map((c, i) => (
+                      <Text key={i} style={styles.commentText}>
+                        <Text style={{ fontFamily: "Poppins_Bold" }}>
+                          {c.usuarioId?.username || "Anon"}:{" "}
+                        </Text>
+                        {c.comentario}
+                      </Text>
+                    ))
+                  ) : (
+                    <Text style={styles.noComments}>No hay comentarios aún</Text>
+                  )}
+
+                  {usuarioId && (
+                    <View style={styles.commentInputRow}>
+                      <TextInput
+                        placeholder="Escribe un comentario..."
+                        style={styles.commentInput}
+                        value={nuevoComentario}
+                        onChangeText={setNuevoComentario}
+                      />
+                      <TouchableOpacity onPress={() => enviarComentario(pub._id)}>
+                        <FontAwesome5 name="paper-plane" size={20} color="#329bd7" />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
               )}
             </View>
           ))
         )}
       </ScrollView>
-
-      {/* ➕ Botón flotante para crear publicación */}
-      <TouchableOpacity style={styles.fab} onPress={irACrearPublicacion} activeOpacity={0.85}>
-        <FontAwesome5 name="plus" size={22} color="#fff" />
-      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-  titleContainer: { marginTop: 25, alignItems: "center", justifyContent: "center" },
+  titleContainer: { marginTop: 25, alignItems: "center" },
   loading: { flex: 1, justifyContent: "center", alignItems: "center" },
   noPosts: { textAlign: "center", marginTop: 40, fontFamily: "Poppins_Regular", color: "#777" },
 
@@ -270,12 +298,9 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     backgroundColor: "#fafafa",
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
     elevation: 3,
   },
-  header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 15, paddingVertical: 10 },
+  header: { flexDirection: "row", alignItems: "center", padding: 10 },
   username: { fontFamily: "Poppins_Bold", fontSize: 15, color: "#333" },
   date: { fontFamily: "Poppins_Regular", fontSize: 12, color: "#777" },
   postImage: { width: "100%", height: width * 0.9, backgroundColor: "#ddd" },
@@ -291,26 +316,21 @@ const styles = StyleSheet.create({
 
   actions: { flexDirection: "row", paddingHorizontal: 15, paddingTop: 10 },
   actionButton: { marginRight: 20 },
-
   likesText: { paddingHorizontal: 15, paddingTop: 5, fontFamily: "Poppins_Bold", color: "#222" },
-  caption: { paddingHorizontal: 15, paddingTop: 3, paddingBottom: 10, fontFamily: "Poppins_Regular", color: "#333" },
-  commentLink: { paddingHorizontal: 15, paddingBottom: 10, fontFamily: "Poppins_Regular", color: "#777" },
+  caption: { paddingHorizontal: 15, paddingVertical: 8, fontFamily: "Poppins_Regular", color: "#333" },
 
-  // ➕ Estilo del botón flotante
-  fab: {
-    position: "absolute",
-    right: 20,
-    bottom: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#329bd7", // puedes usar #f49953 si lo prefieres
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
+  commentSection: { borderTopWidth: 1, borderTopColor: "#ddd", padding: 10 },
+  commentText: { fontFamily: "Poppins_Regular", color: "#333", marginBottom: 4 },
+  noComments: { fontFamily: "Poppins_Regular", color: "#888", fontStyle: "italic" },
+  commentInputRow: { flexDirection: "row", alignItems: "center", marginTop: 8 },
+  commentInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    fontFamily: "Poppins_Regular",
+    height: 36,
+    marginRight: 10,
   },
 });

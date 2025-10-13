@@ -19,9 +19,10 @@ type CrearVisitaRouteProp = RouteProp<RootStackParamList, "CrearVisita">;
 export default function CrearVisita() {
   const route = useRoute<CrearVisitaRouteProp>();
   const navigation = useNavigation<any>();
-  const { mascotaId, visitaId } = route.params || {}; // 📩 Recibe mascotaId como parámetro
+  const { mascotaId, visitaId } = route.params || {};
 
   const [motivo, setMotivo] = useState("");
+  const [peso, setPeso] = useState(""); // ⚖️ Campo requerido
   const [fecha, setFecha] = useState<Date>(new Date());
   const [mostrarPickerFecha, setMostrarPickerFecha] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,7 +30,7 @@ export default function CrearVisita() {
 
   const API_BASE = "https://backendmaguey.onrender.com/api/visitas";
 
-  // 📌 Si hay visitaId => modo edición
+  // 🟢 Si hay visitaId → modo edición
   useEffect(() => {
     const fetchVisita = async () => {
       if (!visitaId) return;
@@ -37,10 +38,19 @@ export default function CrearVisita() {
       setLoading(true);
       try {
         const res = await fetch(`${API_BASE}/${visitaId}`);
+        const text = await res.text();
+
         if (!res.ok) throw new Error("No se pudo obtener la visita.");
-        const data = await res.json();
-        setMotivo(data.motivo || "");
-        if (data.fecha) setFecha(new Date(data.fecha));
+
+        try {
+          const data = JSON.parse(text);
+          setMotivo(data.motivo || "");
+          setPeso(data.peso ? String(data.peso) : "");
+          if (data.fecha) setFecha(new Date(data.fecha));
+        } catch {
+          console.error("⚠️ Respuesta inesperada:", text);
+          Alert.alert("Error", "El servidor no devolvió datos válidos.");
+        }
       } catch (error: any) {
         console.error("❌ Error cargando visita:", error);
         Alert.alert("Error", "No se pudo cargar la información de la visita.");
@@ -51,10 +61,15 @@ export default function CrearVisita() {
     fetchVisita();
   }, [visitaId]);
 
-  // 📌 Crear o actualizar visita
+  // 📩 Crear o actualizar visita
   const handleSubmit = async () => {
-    if (!motivo.trim() || !fecha) {
-      Alert.alert("Campos requeridos", "Completa todos los campos obligatorios.");
+    if (!motivo.trim()) {
+      Alert.alert("Campo requerido", "El motivo de la visita es obligatorio.");
+      return;
+    }
+
+    if (!peso.trim() || isNaN(Number(peso))) {
+      Alert.alert("Peso inválido", "Ingresa un peso válido (solo números).");
       return;
     }
 
@@ -64,7 +79,10 @@ export default function CrearVisita() {
         motivo: motivo.trim(),
         fecha,
         mascotaId,
+        peso: Number(peso), // 👈 se envía como número
       };
+
+      console.log("📦 Enviando payload:", payload);
 
       const res = await fetch(
         modoEditar ? `${API_BASE}/${visitaId}` : `${API_BASE}`,
@@ -75,7 +93,16 @@ export default function CrearVisita() {
         }
       );
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any;
+
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error("⚠️ Respuesta inesperada del servidor:", text);
+        Alert.alert("Error", "El servidor no devolvió datos válidos.");
+        return;
+      }
 
       if (res.ok) {
         Alert.alert(
@@ -91,13 +118,16 @@ export default function CrearVisita() {
       }
     } catch (error: any) {
       console.error("❌ Error al conectar:", error);
-      Alert.alert("Error", "Ocurrió un problema al conectar con el servidor.");
+      Alert.alert(
+        "Error",
+        "Ocurrió un problema al conectar con el servidor. Verifica tu conexión o intenta más tarde."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // 📍 Loading si está editando
+  // 📍 Mostrar loading si está cargando en modo editar
   if (loading && modoEditar) {
     return (
       <View style={styles.loadingContainer}>
@@ -113,7 +143,7 @@ export default function CrearVisita() {
         {modoEditar ? "Editar Visita Médica" : "Registrar Nueva Visita"}
       </Text>
 
-      {/* Campo motivo */}
+      {/* Motivo */}
       <Text style={styles.label}>🩺 Motivo de la visita</Text>
       <TextInput
         style={[styles.input, { height: 100, textAlignVertical: "top" }]}
@@ -123,7 +153,17 @@ export default function CrearVisita() {
         onChangeText={setMotivo}
       />
 
-      {/* Campo fecha */}
+      {/* Peso */}
+      <Text style={styles.label}>⚖️ Peso de la mascota (kg)</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Ej. 12.5"
+        keyboardType="numeric"
+        value={peso}
+        onChangeText={setPeso}
+      />
+
+      {/* Fecha */}
       <Text style={styles.label}>📅 Fecha de la visita</Text>
       <TouchableOpacity
         style={styles.dateButton}
@@ -144,7 +184,7 @@ export default function CrearVisita() {
         />
       )}
 
-      {/* Botones */}
+      {/* Botón Guardar */}
       <TouchableOpacity
         style={[styles.button, loading && { opacity: 0.6 }]}
         onPress={handleSubmit}
@@ -159,6 +199,7 @@ export default function CrearVisita() {
         </Text>
       </TouchableOpacity>
 
+      {/* Botón Cancelar */}
       <TouchableOpacity
         style={styles.buttonSecondary}
         onPress={() => navigation.goBack()}

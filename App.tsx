@@ -13,16 +13,16 @@ import Guia from "./screens/Guia";
 import Eventos from "./screens/Eventos";
 import Mapa from "./screens/Mapa";
 
-// 📸 Publicaciones (tipo Instagram)
+// 📸 Publicaciones
 import Publicaciones from "./screens/Publicaciones";
-import CrearPublicacion from "./screens/CrearPublicacion"; // ✅ Nueva vista
+import CrearPublicacion from "./screens/CrearPublicacion";
 
 // 💰 Presupuestos
 import Presupuestos from "./screens/Presupuestos";
 import PresupuestoMascota from "./screens/PresupuestoMascota";
 import AgregarGasto from "./screens/AgregarGasto";
 
-// 🧬 Guías y fichas
+// 🧬 Guías
 import VacunasPerros from "./screens/Perro";
 import VacunasGatos from "./screens/Gato";
 import VacunasAves from "./screens/Aves";
@@ -39,6 +39,7 @@ import CrearMascota from "./screens/CrearMascotas";
 import MascotasPerdidas from "./screens/MascotaPerdida";
 import CrearMascotaPerdida from "./screens/CrearMascotaPerdida";
 import HistorialMedicoMascota from "./screens/HistorialMedicoMascota";
+import CrearEnfermedadCronica from "./screens/CrearEnfermedad";
 
 // 🔔 Otros
 import Notificaciones from "./screens/Notificaciones";
@@ -49,8 +50,10 @@ import RedesSocialesScreen from "./screens/Redes";
 import CrearVacuna from "./screens/CrearVacuna";
 import CrearDesparasitacion from "./screens/CrearDesparasitacion";
 import CrearVisita from "./screens/CrearVisita";
+import CrearOperacion from "./screens/CrearOperaciones";
+import EditarOperacion from "./screens/EditarOperacion";
 
-// 🧭 Tipado de rutas
+// 🧭 Tipado
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
@@ -60,7 +63,7 @@ export type RootStackParamList = {
   Eventos: undefined;
   Mapa: undefined;
   Publicaciones: undefined;
-  CrearPublicacion: undefined; // ✅ Nueva ruta
+  CrearPublicacion: undefined;
   Presupuestos: undefined;
   PresupuestoMascota: { mascotaId: string };
   AgregarGasto: { mascotaId: string };
@@ -84,12 +87,14 @@ export type RootStackParamList = {
   CrearVacuna: { mascotaId: string; vacunaId?: string };
   CrearDesparasitacion: { mascotaId: string; desparasitacionId?: string };
   CrearVisita: { mascotaId: string; visitaId?: string };
+  CrearOperacion: { mascotaId: string; operacionId?: string };
+  EditarOperacion: { mascotaId: string; operacionId: string };
+  CrearEnfermedad: { mascotaId: string; enfermedadId?: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
-  // ✅ Control de la barra de navegación (Android)
   const ensureNavBarVisible = useCallback(async () => {
     if (Platform.OS !== "android") return;
     try {
@@ -111,7 +116,10 @@ export default function App() {
       onReady={ensureNavBarVisible}
       onStateChange={ensureNavBarVisible}
     >
-      <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        initialRouteName="Login"
+        screenOptions={{ headerShown: false }}
+      >
         {/* 🔐 Autenticación */}
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Register" component={Register} />
@@ -132,7 +140,10 @@ export default function App() {
         <Stack.Screen name="PresupuestoMascota" component={PresupuestoMascota} />
         <Stack.Screen name="AgregarGasto" component={AgregarGasto} />
 
-        {/* 🧬 Guías y fichas */}
+        {/* 🩺 Enfermedades Crónicas */}
+        <Stack.Screen name="CrearEnfermedad" component={CrearEnfermedadCronica} />
+
+        {/* 🧬 Guías */}
         <Stack.Screen name="VacunasPerros" component={VacunasPerros} />
         <Stack.Screen name="VacunasGatos" component={VacunasGatos} />
         <Stack.Screen name="VacunasAves" component={VacunasAves} />
@@ -161,6 +172,8 @@ export default function App() {
         <Stack.Screen name="CrearVacuna" component={CrearVacuna} />
         <Stack.Screen name="CrearDesparasitacion" component={CrearDesparasitacion} />
         <Stack.Screen name="CrearVisita" component={CrearVisita} />
+        <Stack.Screen name="CrearOperacion" component={CrearOperacion} />
+        <Stack.Screen name="EditarOperacion" component={EditarOperacion} />
       </Stack.Navigator>
     </NavigationContainer>
   );
