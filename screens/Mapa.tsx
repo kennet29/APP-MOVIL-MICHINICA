@@ -5,9 +5,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
-
 import * as Location from "expo-location";
 import { useNavigation } from "@react-navigation/native";
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -22,30 +22,43 @@ export default function Mapa() {
   const [location, setLocation] = useState<Coordinate | null>(null);
   const [path, setPath] = useState<Coordinate[]>([]);
   const [watching, setWatching] = useState(false);
+  const [loading, setLoading] = useState(true);
   const watcher = useRef<Location.LocationSubscription | null>(null);
 
-  // 🔹 Solicitar permiso y obtener ubicación inicial
+  // 🔹 Solicitar permiso y ubicación inicial
   useEffect(() => {
     (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert("Permiso denegado", "Activa la ubicación para usar el mapa.");
-        return;
-      }
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert("Permiso denegado", "Activa la ubicación para usar el mapa.");
+          setLoading(false);
+          return;
+        }
 
-      const current = await Location.getCurrentPositionAsync({});
-      const initial = {
-        latitude: current.coords.latitude,
-        longitude: current.coords.longitude,
-      };
-      setLocation(initial);
-      setPath([initial]);
+        const current = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        });
+
+        const initial = {
+          latitude: current.coords.latitude,
+          longitude: current.coords.longitude,
+        };
+
+        setLocation(initial);
+        setPath([initial]);
+      } catch (error) {
+        console.error("❌ Error obteniendo ubicación:", error);
+        Alert.alert("Error", "No se pudo obtener tu ubicación inicial.");
+      } finally {
+        setLoading(false);
+      }
     })();
 
     return () => stopWatching();
   }, []);
 
-  // ▶️ Iniciar seguimiento en tiempo real
+  // ▶️ Iniciar seguimiento
   const startWatching = async () => {
     if (watching) return;
 
@@ -83,28 +96,41 @@ export default function Mapa() {
     setWatching(false);
   };
 
+  // ⏳ Mostrar carga inicial
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#1DB954" />
+        <Text style={{ marginTop: 10 }}>Obteniendo ubicación...</Text>
+      </View>
+    );
+  }
+
+  // 🚫 Si no hay ubicación disponible
+  if (!location) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>No se pudo obtener la ubicación.</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <MapView
         style={styles.map}
         showsUserLocation={true}
-        region={
-          location
-            ? {
-                latitude: location.latitude,
-                longitude: location.longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }
-            : undefined
-        }
+        initialRegion={{
+          latitude: location.latitude,
+          longitude: location.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        }}
       >
         {path.length > 1 && (
           <Polyline coordinates={path} strokeColor="#1E90FF" strokeWidth={4} />
         )}
-        {location && (
-          <Marker coordinate={location} title="Tu ubicación" pinColor="#1DB954" />
-        )}
+        <Marker coordinate={location} title="Tu ubicación" pinColor="#1DB954" />
       </MapView>
 
       {/* ▶️ Botón iniciar/detener */}
@@ -134,6 +160,11 @@ export default function Mapa() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   trackButton: {
     position: "absolute",
     bottom: 40,

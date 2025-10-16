@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 
 export default function Register({ navigation }: any) {
-  const [nombre, setNombre] = useState("");   // 👈 Nuevo estado
+  const [nombre, setNombre] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +34,7 @@ export default function Register({ navigation }: any) {
       const response = await fetch("https://backendmaguey.onrender.com/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, username, email, password }), // 👈 Se envía nombre
+        body: JSON.stringify({ nombre, username, email, password }),
       });
 
       const data = await response.json();
@@ -42,15 +42,12 @@ export default function Register({ navigation }: any) {
       if (!response.ok) {
         Alert.alert("Error", data.message || "Error al registrar usuario");
       } else {
-        // Guardamos el token en AsyncStorage
         if (data.token) {
           await AsyncStorage.setItem("userToken", data.token);
           console.log("Token guardado:", data.token);
         }
 
         Alert.alert("Éxito", "Usuario registrado correctamente");
-
-        // Redirigimos a Home o Login
         navigation.replace("Home");
       }
     } catch (error: any) {
@@ -71,10 +68,10 @@ export default function Register({ navigation }: any) {
 
       <Text style={styles.title}>Crear Cuenta</Text>
 
-      {/* 👇 Nuevo campo Nombre */}
       <TextInput
         style={styles.input}
         placeholder="Nombre completo"
+        placeholderTextColor="#888"
         value={nombre}
         onChangeText={setNombre}
       />
@@ -82,21 +79,26 @@ export default function Register({ navigation }: any) {
       <TextInput
         style={styles.input}
         placeholder="Nombre de usuario"
+        placeholderTextColor="#888"
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
       />
+
       <TextInput
         style={styles.input}
         placeholder="Correo electrónico"
+        placeholderTextColor="#888"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
       />
+
       <TextInput
         style={styles.input}
         placeholder="Contraseña"
+        placeholderTextColor="#888"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -118,11 +120,53 @@ export default function Register({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: "#FFFF" },
-  logo: { width: 250, height: 250, borderRadius: 5000, marginTop:-90 },
-  title: { fontSize: 41, marginBottom: 40, color:"#f49953", fontFamily: "Poppins_Bold" },
-  input: { width: "100%", borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, marginVertical: 10, fontFamily: "Poppins_Regular" },
-  button: { backgroundColor: "#329bd7", padding: 15, borderRadius: 8, width: "100%", alignItems: "center", marginTop: 10 },
-  buttonText: { color: "#fff", textAlign: "center", fontFamily: "Poppins_Bold" },
-  link: { marginTop: 15, color: "#007BFF", fontFamily: "Poppins_Regular" },
+  container: { 
+    flex: 1, 
+    justifyContent: "center", 
+    alignItems: "center", 
+    padding: 20, 
+    backgroundColor: "#FFFF" 
+  },
+  logo: { 
+    width: 250, 
+    height: 250, 
+    borderRadius: 5000, 
+    marginTop: -90 
+  },
+  title: { 
+    fontSize: 41, 
+    marginBottom: 40, 
+    color: "#f49953", 
+    fontFamily: "Poppins_Bold" 
+  },
+  input: {
+    width: "100%",
+    borderWidth: 1.2,
+    borderColor: "#b0b0b0",
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 10,
+    fontFamily: "Poppins_Regular",
+    fontSize: 16,
+    color: "#333",
+    backgroundColor: "#fff",
+  },
+  button: { 
+    backgroundColor: "#329bd7", 
+    padding: 15, 
+    borderRadius: 8, 
+    width: "100%", 
+    alignItems: "center", 
+    marginTop: 10 
+  },
+  buttonText: { 
+    color: "#fff", 
+    textAlign: "center", 
+    fontFamily: "Poppins_Bold" 
+  },
+  link: { 
+    marginTop: 15, 
+    color: "#007BFF", 
+    fontFamily: "Poppins_Regular" 
+  },
 });

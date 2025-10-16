@@ -86,7 +86,6 @@ export default function CrearMascota({ navigation }: any) {
       } as any);
     }
 
-    // 👀 Mostrar el JSON enviado sin usar _parts (evita error TS)
     const debugData: Record<string, any> = {
       nombre,
       especie,
@@ -134,6 +133,7 @@ export default function CrearMascota({ navigation }: any) {
       <TextInput
         style={styles.input}
         placeholder="Nombre de la mascota"
+        placeholderTextColor="#888"
         value={nombre}
         onChangeText={setNombre}
       />
@@ -147,16 +147,14 @@ export default function CrearMascota({ navigation }: any) {
         <Picker.Item label="Selecciona especie..." value="" />
         <Picker.Item label="Perro" value="perro" />
         <Picker.Item label="Gato" value="gato" />
-        <Picker.Item label="Ave" value="ave" />
-        <Picker.Item label="Roedor" value="roedor" />
-        <Picker.Item label="Tortuga" value="tortuga" />
         <Picker.Item label="Conejo" value="conejo" />
-        <Picker.Item label="Otro" value="otro" />
+        <Picker.Item label="Peces" value="otro" />
       </Picker>
 
       <TextInput
         style={styles.input}
         placeholder="Raza (opcional)"
+        placeholderTextColor="#888"
         value={raza}
         onChangeText={setRaza}
       />
@@ -210,6 +208,7 @@ export default function CrearMascota({ navigation }: any) {
       <TextInput
         style={[styles.input, { height: 80 }]}
         placeholder="Descripción"
+        placeholderTextColor="#888"
         value={descripcion}
         onChangeText={setDescripcion}
         multiline
@@ -251,21 +250,32 @@ const styles = StyleSheet.create({
     color: "#329bd7",
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
+    borderWidth: 1.2,
+    borderColor: "#b0b0b0",
     borderRadius: 8,
-    padding: 10,
+    padding: 12,
     marginVertical: 8,
+    fontSize: 16,
+    color: "#333", // 🟢 texto oscuro
+    backgroundColor: "#fff",
   },
-  label: { fontSize: 16, marginTop: 10, fontWeight: "bold" },
-  picker: { backgroundColor: "#f5f5f5", borderRadius: 8, marginVertical: 5 },
+  label: {
+    fontSize: 16,
+    marginTop: 10,
+    fontWeight: "bold",
+  },
+  picker: {
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    marginVertical: 5,
+  },
   dateButton: {
     backgroundColor: "#ddd",
     padding: 10,
     borderRadius: 8,
     marginVertical: 8,
   },
-  dateText: { textAlign: "center" },
+  dateText: { textAlign: "center", color: "#333" },
   vetButton: {
     padding: 12,
     borderRadius: 8,

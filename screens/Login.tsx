@@ -60,9 +60,8 @@ export default function Login({ navigation }: any) {
           await AsyncStorage.setItem("userToken", data.token);
           await AsyncStorage.setItem("userEmail", email);
 
-          // 👇 Crear un objeto usuario basado en la respuesta del backend
           const usuario = {
-            _id: data._id, // viene directamente del backend
+            _id: data._id,
             email,
           };
 
@@ -93,17 +92,21 @@ export default function Login({ navigation }: any) {
 
       <Text style={styles.title}>Iniciar Sesión</Text>
 
+      {/* 🟢 Input con placeholder visible */}
       <TextInput
         style={styles.input}
         placeholder="Correo electrónico"
+        placeholderTextColor="#888"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
       />
+
       <TextInput
         style={styles.input}
         placeholder="Contraseña"
+        placeholderTextColor="#888"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -145,12 +148,15 @@ const styles = StyleSheet.create({
   },
   input: {
     width: "100%",
-    borderWidth: 1,
-    borderColor: "#ccc",
+    borderWidth: 1.2,
+    borderColor: "#b0b0b0",
     borderRadius: 8,
-    padding: 10,
+    padding: 12,
     marginVertical: 10,
     fontFamily: "Poppins_Regular",
+    fontSize: 16,
+    color: "#333", // texto del usuario oscuro
+    backgroundColor: "#fff",
   },
   button: {
     backgroundColor: "#329bd7",

@@ -20,6 +20,7 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import ZoonicaTitle from "../screens/Titulo";
+import { useNavigation } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
 
@@ -46,6 +47,7 @@ type Publicacion = {
 };
 
 export default function Publicaciones() {
+  const navigation = useNavigation<any>();
   const [publicaciones, setPublicaciones] = useState<Publicacion[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -177,7 +179,7 @@ export default function Publicaciones() {
 
       <ScrollView
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        contentContainerStyle={{ paddingBottom: 60 }}
+        contentContainerStyle={{ paddingBottom: 80 }}
       >
         {publicaciones.length === 0 ? (
           <Text style={styles.noPosts}>No hay publicaciones todavía 🐾</Text>
@@ -245,7 +247,6 @@ export default function Publicaciones() {
                 </Text>
               )}
 
-              {/* 🔽 Sección de comentarios visible */}
               {comentariosVisibles === pub._id && (
                 <View style={styles.commentSection}>
                   {pub.comentarios && pub.comentarios.length > 0 ? (
@@ -280,6 +281,14 @@ export default function Publicaciones() {
           ))
         )}
       </ScrollView>
+
+      {/* ➕ Botón flotante para crear publicación */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => navigation.navigate("CrearPublicacion")}
+      >
+        <FontAwesome5 name="plus" size={24} color="#fff" />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -332,5 +341,23 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins_Regular",
     height: 36,
     marginRight: 10,
+  },
+
+  // 📍 Estilo del botón flotante
+  fab: {
+    position: "absolute",
+    bottom: 25,
+    right: 25,
+    backgroundColor: "#00BFFF",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 3,
   },
 });
