@@ -20,7 +20,7 @@ export default function CrearPublicacion({ navigation }: any) {
   const [usuarioId, setUsuarioId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // 🔹 Cargar usuarioId desde AsyncStorage
+
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -37,7 +37,7 @@ export default function CrearPublicacion({ navigation }: any) {
     loadUser();
   }, []);
 
-  // 🔹 Elegir imagen desde galería
+ 
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
@@ -46,7 +46,7 @@ export default function CrearPublicacion({ navigation }: any) {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // ✅ funciona bien en Expo SDK 49+
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, 
       allowsMultipleSelection: true,
       quality: 0.8,
     });
@@ -56,7 +56,7 @@ export default function CrearPublicacion({ navigation }: any) {
     }
   };
 
-  // 🔹 Enviar publicación al backend
+
   const handleCrearPublicacion = async () => {
     if (!contenido.trim()) {
       Alert.alert("Error", "El contenido no puede estar vacío.");
@@ -96,7 +96,7 @@ export default function CrearPublicacion({ navigation }: any) {
 
       const response = await fetch("https://backendmaguey.onrender.com/api/publicaciones", {
         method: "POST",
-        body: formData, // ⚠️ No agregues headers, fetch los maneja automáticamente
+        body: formData, 
       });
 
       const data = await response.json();

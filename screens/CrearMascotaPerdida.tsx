@@ -1,4 +1,3 @@
-// screens/CrearMascotaPerdida.tsx
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
@@ -11,16 +10,19 @@ import {
   Image,
   Animated,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { FontAwesome5 } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function CrearMascotaPerdida({ navigation }: any) {
   const [nombre, setNombre] = useState("");
-  const [especie, setEspecie] = useState("perro");
+  const [especie, setEspecie] = useState("");
   const [raza, setRaza] = useState("");
-  const [sexo, setSexo] = useState("macho");
+  const [sexo, setSexo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [fechaPerdida, setFechaPerdida] = useState(new Date());
   const [lugarPerdida, setLugarPerdida] = useState("");
@@ -28,8 +30,29 @@ export default function CrearMascotaPerdida({ navigation }: any) {
   const [email, setEmail] = useState("");
   const [foto, setFoto] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [usuarioId, setUsuarioId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const usuarioId = "66f5a53a6b8f59e71cc12345"; // ⚠️ reemplazar con el real
+  // 🟢 Cargar usuario guardado desde AsyncStorage
+  useEffect(() => {
+    const loadUsuario = async () => {
+      try {
+        const userData = await AsyncStorage.getItem("usuario");
+        if (userData) {
+          const parsed = JSON.parse(userData);
+          setUsuarioId(parsed._id);
+          console.log("👤 Usuario encontrado:", parsed);
+        } else {
+          console.warn("⚠️ No se encontró usuario en AsyncStorage");
+          Alert.alert("Sesión expirada", "Por favor inicia sesión nuevamente");
+          navigation.replace("Login");
+        }
+      } catch (error) {
+        console.error("❌ Error al cargar usuario:", error);
+      }
+    };
+    loadUsuario();
+  }, []);
 
   // Animación ZooNica
   const titleScale = useRef(new Animated.Value(0)).current;
@@ -55,31 +78,22 @@ export default function CrearMascotaPerdida({ navigation }: any) {
       allowsEditing: true,
       quality: 0.7,
     });
-    if (!result.canceled) {
-      setFoto(result.assets[0].uri);
-    }
+    if (!result.canceled) setFoto(result.assets[0].uri);
   };
 
   // 📤 Enviar formulario
   const handleSubmit = async () => {
-    if (!nombre || nombre.trim().length < 2) {
-      Alert.alert("Error", "El nombre debe tener al menos 2 caracteres.");
+    if (!usuarioId) {
+      Alert.alert("Error", "No se ha encontrado tu usuario, vuelve a iniciar sesión.");
       return;
     }
-    if (!descripcion || descripcion.trim().length < 10) {
-      Alert.alert("Error", "La descripción debe tener al menos 10 caracteres.");
-      return;
-    }
-    if (!lugarPerdida || lugarPerdida.trim().length < 2) {
-      Alert.alert("Error", "El lugar de pérdida es obligatorio.");
-      return;
-    }
-    if (!telefono.trim()) {
-      Alert.alert("Error", "El teléfono es obligatorio.");
+    if (!nombre.trim() || !especie || !sexo || !lugarPerdida.trim() || !telefono.trim()) {
+      Alert.alert("Error", "Por favor completa todos los campos obligatorios.");
       return;
     }
 
     try {
+      setLoading(true);
       const formData = new FormData();
       formData.append("nombre", nombre.trim());
       formData.append("especie", especie);
@@ -88,7 +102,6 @@ export default function CrearMascotaPerdida({ navigation }: any) {
       formData.append("descripcion", descripcion.trim());
       formData.append("fechaPerdida", fechaPerdida.toISOString());
       formData.append("lugarPerdida", lugarPerdida.trim());
-      // ⚡ El backend mete estos en contacto
       formData.append("telefono", telefono.trim());
       if (email) formData.append("email", email.trim());
       formData.append("usuarioId", usuarioId);
@@ -112,7 +125,7 @@ export default function CrearMascotaPerdida({ navigation }: any) {
       console.log("📥 Respuesta backend:", data);
 
       if (res.ok) {
-        Alert.alert("Éxito", "Mascota perdida registrada correctamente");
+        Alert.alert("Éxito", "Mascota perdida registrada correctamente 🎉");
         navigation.goBack();
       } else {
         Alert.alert("Error", data.message || "No se pudo crear la publicación");
@@ -120,8 +133,19 @@ export default function CrearMascotaPerdida({ navigation }: any) {
     } catch (error) {
       console.error("❌ Error frontend:", error);
       Alert.alert("Error", "Ocurrió un problema al registrar la mascota");
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (!usuarioId) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#329bd7" />
+        <Text style={{ marginTop: 10, color: "#555" }}>Cargando usuario...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -139,20 +163,44 @@ export default function CrearMascotaPerdida({ navigation }: any) {
 
       <Text style={styles.subtitle}>Registrar Mascota Perdida</Text>
 
-      <TextInput style={styles.input} placeholder="Nombre" value={nombre} onChangeText={setNombre} />
-      <TextInput style={styles.input} placeholder="Especie (perro, gato...)" value={especie} onChangeText={setEspecie} />
-      <TextInput style={styles.input} placeholder="Raza" value={raza} onChangeText={setRaza} />
-      <TextInput style={styles.input} placeholder="Sexo (macho/hembra)" value={sexo} onChangeText={setSexo} />
+      <TextInput
+        style={styles.input}
+        placeholder="Nombre de la mascota"
+        value={nombre}
+        onChangeText={setNombre}
+      />
+
+      {/* 🐶 Picker de especie */}
+      <Text style={styles.label}>Especie</Text>
+      <Picker selectedValue={especie} onValueChange={setEspecie} style={styles.picker}>
+        <Picker.Item label="Selecciona especie..." value="" />
+        <Picker.Item label="Perro" value="perro" />
+        <Picker.Item label="Gato" value="gato" />
+        <Picker.Item label="Conejo" value="conejo" />
+        <Picker.Item label="Pez" value="pez" />
+        <Picker.Item label="Ave" value="ave" />
+        <Picker.Item label="Otro" value="otro" />
+      </Picker>
+
+      <TextInput style={styles.input} placeholder="Raza (opcional)" value={raza} onChangeText={setRaza} />
+
+      {/* 🚻 Picker de sexo */}
+      <Text style={styles.label}>Sexo</Text>
+      <Picker selectedValue={sexo} onValueChange={setSexo} style={styles.picker}>
+        <Picker.Item label="Selecciona sexo..." value="" />
+        <Picker.Item label="Macho" value="macho" />
+        <Picker.Item label="Hembra" value="hembra" />
+      </Picker>
 
       <TextInput
         style={[styles.input, { height: 80 }]}
-        placeholder="Descripción"
+        placeholder="Descripción (opcional)"
         multiline
         value={descripcion}
         onChangeText={setDescripcion}
       />
 
-      {/* Fecha */}
+      {/* 📅 Fecha */}
       <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
         <FontAwesome5 name="calendar-alt" size={18} color="#fff" />
         <Text style={styles.dateText}>{fechaPerdida.toLocaleDateString()}</Text>
@@ -169,20 +217,42 @@ export default function CrearMascotaPerdida({ navigation }: any) {
         />
       )}
 
-      <TextInput style={styles.input} placeholder="Lugar de pérdida" value={lugarPerdida} onChangeText={setLugarPerdida} />
-      <TextInput style={styles.input} placeholder="Teléfono" value={telefono} onChangeText={setTelefono} keyboardType="phone-pad" />
-      <TextInput style={styles.input} placeholder="Correo electrónico" value={email} onChangeText={setEmail} keyboardType="email-address" />
+      <TextInput
+        style={styles.input}
+        placeholder="Lugar de pérdida"
+        value={lugarPerdida}
+        onChangeText={setLugarPerdida}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Teléfono de contacto"
+        value={telefono}
+        onChangeText={setTelefono}
+        keyboardType="phone-pad"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Correo electrónico (opcional)"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+      />
 
-      {/* Subir foto */}
+      {/* 📸 Subir foto */}
       <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
         <FontAwesome5 name="camera" size={18} color="#fff" />
-        <Text style={styles.uploadText}> Subir Foto</Text>
+        <Text style={styles.uploadText}>{foto ? " Cambiar Foto" : " Subir Foto"}</Text>
       </TouchableOpacity>
+
       {foto && <Image source={{ uri: foto }} style={styles.preview} />}
 
-      {/* Guardar */}
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.submitText}>Guardar Mascota</Text>
+      {/* 💾 Guardar */}
+      <TouchableOpacity
+        style={[styles.submitButton, loading && { opacity: 0.7 }]}
+        onPress={handleSubmit}
+        disabled={loading}
+      >
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitText}>Guardar Mascota</Text>}
       </TouchableOpacity>
     </ScrollView>
   );
@@ -190,14 +260,17 @@ export default function CrearMascotaPerdida({ navigation }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" },
   titleZoo: { fontSize: 40, marginBottom: 10, textAlign: "center", fontWeight: "bold" },
   subtitle: { fontSize: 20, fontWeight: "bold", marginBottom: 20, textAlign: "center", color: "#333" },
-  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 16 },
-  dateButton: { flexDirection: "row", alignItems: "center", backgroundColor: "#1DB954", padding: 12, borderRadius: 8, marginBottom: 12 },
+  label: { fontSize: 16, fontWeight: "bold", marginTop: 10 },
+  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 12, marginVertical: 8, fontSize: 16 },
+  picker: { backgroundColor: "#f5f5f5", borderRadius: 8, marginVertical: 5 },
+  dateButton: { flexDirection: "row", alignItems: "center", backgroundColor: "#1DB954", padding: 12, borderRadius: 8, marginVertical: 12 },
   dateText: { marginLeft: 10, color: "#fff", fontSize: 16 },
   uploadButton: { flexDirection: "row", alignItems: "center", backgroundColor: "#007bff", padding: 12, borderRadius: 8, marginBottom: 12 },
   uploadText: { marginLeft: 10, color: "#fff", fontSize: 16 },
-  preview: { width: "100%", height: 200, borderRadius: 8, marginBottom: 12 },
+  preview: { width: "100%", height: 200, borderRadius: 8, marginVertical: 10 },
   submitButton: { backgroundColor: "#e87170", padding: 15, borderRadius: 8, alignItems: "center", marginTop: 10 },
   submitText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
 });

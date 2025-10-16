@@ -7,7 +7,7 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import MapView, { Marker, Polyline } from "react-native-maps";
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
 import { useNavigation } from "@react-navigation/native";
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -25,17 +25,35 @@ export default function Mapa() {
   const [loading, setLoading] = useState(true);
   const watcher = useRef<Location.LocationSubscription | null>(null);
 
-  // 🔹 Solicitar permiso y ubicación inicial
+  // ✅ Verifica y solicita permisos correctamente
+  const checkPermission = async (): Promise<boolean> => {
+    let { status } = await Location.getForegroundPermissionsAsync();
+    console.log("📍 Estado inicial del permiso:", status);
+
+    if (status !== "granted") {
+      const { status: newStatus } = await Location.requestForegroundPermissionsAsync();
+      console.log("📍 Nuevo estado:", newStatus);
+      if (newStatus !== "granted") {
+        Alert.alert(
+          "Permiso denegado",
+          "Activa la ubicación manualmente en los ajustes del sistema para usar el mapa."
+        );
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // 🔹 Obtener ubicación inicial
   useEffect(() => {
     (async () => {
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          Alert.alert("Permiso denegado", "Activa la ubicación para usar el mapa.");
-          setLoading(false);
-          return;
-        }
+      const hasPermission = await checkPermission();
+      if (!hasPermission) {
+        setLoading(false);
+        return;
+      }
 
+      try {
         const current = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.High,
         });
@@ -48,7 +66,7 @@ export default function Mapa() {
         setLocation(initial);
         setPath([initial]);
       } catch (error) {
-        console.error("❌ Error obteniendo ubicación:", error);
+        console.error("❌ Error al obtener ubicación:", error);
         Alert.alert("Error", "No se pudo obtener tu ubicación inicial.");
       } finally {
         setLoading(false);
@@ -62,11 +80,8 @@ export default function Mapa() {
   const startWatching = async () => {
     if (watching) return;
 
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permiso denegado", "No se puede acceder a la ubicación.");
-      return;
-    }
+    const hasPermission = await checkPermission();
+    if (!hasPermission) return;
 
     watcher.current = await Location.watchPositionAsync(
       {
@@ -96,7 +111,7 @@ export default function Mapa() {
     setWatching(false);
   };
 
-  // ⏳ Mostrar carga inicial
+  // ⏳ Mientras carga ubicación
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -118,8 +133,10 @@ export default function Mapa() {
   return (
     <View style={styles.container}>
       <MapView
+        provider={PROVIDER_GOOGLE}
         style={styles.map}
         showsUserLocation={true}
+        followsUserLocation={true}
         initialRegion={{
           latitude: location.latitude,
           longitude: location.longitude,
@@ -127,13 +144,13 @@ export default function Mapa() {
           longitudeDelta: 0.01,
         }}
       >
-        {path.length > 1 && (
-          <Polyline coordinates={path} strokeColor="#1E90FF" strokeWidth={4} />
-        )}
+       
+
+        {/* 📍 Marcador actual */}
         <Marker coordinate={location} title="Tu ubicación" pinColor="#1DB954" />
       </MapView>
 
-      {/* ▶️ Botón iniciar/detener */}
+      {/* ▶️ Botón iniciar/detener seguimiento */}
       <TouchableOpacity
         style={[
           styles.trackButton,

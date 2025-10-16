@@ -92,7 +92,7 @@ export default function AgregarGasto({ route, navigation }: any) {
     setLoading(true);
 
     try {
-      const response = await fetch("https://backendmaguey.onrender.com/api/presupuesto/gasto", {
+      const response = await fetch("https://backendmaguey.onrender.com/api/presupuesto", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
