@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import jwt_decode from "jwt-decode"; // ✅ import normal
 
 interface JwtPayload {
   id: string;   // ⚠️ tu backend puede devolver "id", "_id" o "userId"
@@ -67,7 +66,7 @@ export default function MascotasPerdidas({ navigation }: any) {
       const data = await res.json();
       setMascotas(data);
     } catch (error) {
-      console.error("❌ Error cargando mascotas:", error);
+      console.error("Funcion en Desarrollo", error);
     } finally {
       setLoading(false);
     }
@@ -94,7 +93,7 @@ export default function MascotasPerdidas({ navigation }: any) {
         fetchMascotas();
       } else {
         const err = await res.json();
-        Alert.alert("❌ Error", err.message || "No se pudo actualizar la mascota");
+        Alert.alert("Alerta", err.message || "Funcion en Desarrollo");
       }
     } catch (error) {
       console.error("❌ Error:", error);

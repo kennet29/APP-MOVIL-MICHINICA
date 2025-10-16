@@ -154,7 +154,7 @@ export default function CrearMascota({ navigation }: any) {
       <TextInput
         style={styles.input}
         placeholder="Raza (opcional)"
-        placeholderTextColor="#888"
+        placeholderTextColor="#000000ff"
         value={raza}
         onChangeText={setRaza}
       />
@@ -265,9 +265,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   picker: {
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#ffffffff",
     borderRadius: 8,
     marginVertical: 5,
+    color:"#000",
   },
   dateButton: {
     backgroundColor: "#ddd",

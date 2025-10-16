@@ -7,7 +7,7 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { Marker, Polyline } from "react-native-maps";
 import * as Location from "expo-location";
 import { useNavigation } from "@react-navigation/native";
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -25,37 +25,28 @@ export default function Mapa() {
   const [loading, setLoading] = useState(true);
   const watcher = useRef<Location.LocationSubscription | null>(null);
 
-  // ✅ Verifica y solicita permisos correctamente
   const checkPermission = async (): Promise<boolean> => {
-    let { status } = await Location.getForegroundPermissionsAsync();
-    console.log("📍 Estado inicial del permiso:", status);
-
+    const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
-      const { status: newStatus } = await Location.requestForegroundPermissionsAsync();
-      console.log("📍 Nuevo estado:", newStatus);
-      if (newStatus !== "granted") {
-        Alert.alert(
-          "Permiso denegado",
-          "Activa la ubicación manualmente en los ajustes del sistema para usar el mapa."
-        );
-        return false;
-      }
+      Alert.alert(
+        "Permiso denegado",
+        "Activa la ubicación en los ajustes del sistema para usar el mapa."
+      );
+      return false;
     }
     return true;
   };
 
-  // 🔹 Obtener ubicación inicial
   useEffect(() => {
+    let isMounted = true;
+
     (async () => {
       const hasPermission = await checkPermission();
-      if (!hasPermission) {
-        setLoading(false);
-        return;
-      }
+      if (!hasPermission || !isMounted) return;
 
       try {
         const current = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.High,
+          accuracy: Location.Accuracy.Balanced,
         });
 
         const initial = {
@@ -67,25 +58,26 @@ export default function Mapa() {
         setPath([initial]);
       } catch (error) {
         console.error("❌ Error al obtener ubicación:", error);
-        Alert.alert("Error", "No se pudo obtener tu ubicación inicial.");
+        Alert.alert("Error", "No se pudo obtener tu ubicación.");
       } finally {
         setLoading(false);
       }
     })();
 
-    return () => stopWatching();
+    return () => {
+      isMounted = false;
+      stopWatching();
+    };
   }, []);
 
-  // ▶️ Iniciar seguimiento
   const startWatching = async () => {
     if (watching) return;
-
     const hasPermission = await checkPermission();
     if (!hasPermission) return;
 
     watcher.current = await Location.watchPositionAsync(
       {
-        accuracy: Location.Accuracy.Highest,
+        accuracy: Location.Accuracy.Balanced,
         timeInterval: 2000,
         distanceInterval: 1,
       },
@@ -102,7 +94,6 @@ export default function Mapa() {
     setWatching(true);
   };
 
-  // ⏹️ Detener seguimiento
   const stopWatching = () => {
     if (watcher.current) {
       watcher.current.remove();
@@ -111,7 +102,6 @@ export default function Mapa() {
     setWatching(false);
   };
 
-  // ⏳ Mientras carga ubicación
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -121,7 +111,6 @@ export default function Mapa() {
     );
   }
 
-  // 🚫 Si no hay ubicación disponible
   if (!location) {
     return (
       <View style={styles.loadingContainer}>
@@ -133,29 +122,22 @@ export default function Mapa() {
   return (
     <View style={styles.container}>
       <MapView
-        provider={PROVIDER_GOOGLE}
         style={styles.map}
         showsUserLocation={true}
         followsUserLocation={true}
-        initialRegion={{
+        region={{
           latitude: location.latitude,
           longitude: location.longitude,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         }}
       >
-       
-
-        {/* 📍 Marcador actual */}
+        <Polyline coordinates={path} strokeWidth={4} strokeColor="#1DB954" />
         <Marker coordinate={location} title="Tu ubicación" pinColor="#1DB954" />
       </MapView>
 
-      {/* ▶️ Botón iniciar/detener seguimiento */}
       <TouchableOpacity
-        style={[
-          styles.trackButton,
-          { backgroundColor: watching ? "#e74c3c" : "#1DB954" },
-        ]}
+        style={[styles.trackButton, { backgroundColor: watching ? "#e74c3c" : "#1DB954" }]}
         onPress={watching ? stopWatching : startWatching}
       >
         <Text style={styles.trackButtonText}>
@@ -163,7 +145,6 @@ export default function Mapa() {
         </Text>
       </TouchableOpacity>
 
-      {/* 🏠 Botón volver al Home */}
       <TouchableOpacity
         style={styles.homeButton}
         onPress={() => navigation.navigate("Home" as never)}

@@ -210,6 +210,7 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 15,
     backgroundColor: "#f9f9f9",
+    color:"#000"
   },
   dateButton: {
     borderWidth: 1,
@@ -217,6 +218,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     backgroundColor: "#f9f9f9",
+    color:"#000",
   },
   dateText: {
     fontSize: 15,
