@@ -29,11 +29,17 @@ export default function Notificaciones() {
   const [usuarioId, setUsuarioId] = useState<string | null>(null);
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([
     {
-      _id: "demo-peces",
-      mensaje: "Hora de alimentar a tus peces 🐟",
+      _id: "demo1",
+      mensaje: "Hora de alimentar a tus mascotas",
       leida: false,
       createdAt: new Date().toISOString(),
-      mascotaId: { nombre: "Peces" },
+      mascotaId: { nombre: "Recordatorio" },
+    },  {
+      _id: "demo2",
+      mensaje: "Hora de pasear a tus mascotas",
+      leida: false,
+      createdAt: new Date().toISOString(),
+      mascotaId: { nombre: "Recordatorio" },
     },
   ]);
   const [loading, setLoading] = useState(false);

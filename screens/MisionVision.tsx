@@ -13,12 +13,12 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import BottomMenu from "./Menu";
-import ZoonicaTitle from "./Titulo"; 
+import ZoonicaTitle from "./Titulo";
 
 export default function MisionVisionScreen({ navigation }: any) {
-  const [activeTab, setActiveTab] = useState<"Home" | "Profile" | "Mascota" | "MisionVision">(
-    "MisionVision"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "Home" | "Profile" | "MisMascotas" | "MisionVision" | "Notificaciones"
+  >("MisionVision");
 
   const [fontsLoaded] = useFonts({
     Poppins_Regular: Poppins_400Regular,
@@ -33,15 +33,18 @@ export default function MisionVisionScreen({ navigation }: any) {
     );
   }
 
-  const handleTabPress = (tab: "Home" | "Profile" | "Mascota" | "MisionVision") => {
+  const handleTabPress = (
+    tab: "Home" | "Profile" | "MisMascotas" | "MisionVision" | "Notificaciones"
+  ) => {
     setActiveTab(tab);
     navigation.navigate(tab);
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container} style={{ marginBottom: 10 }}>
-
+      <ScrollView
+        contentContainerStyle={[styles.container, { paddingBottom: 90 }]} // padding para que no tape el menú
+      >
         <View style={{ marginBottom: 5, alignItems: "center", marginTop: 50 }}>
           <ZoonicaTitle
             size={48}
@@ -50,15 +53,21 @@ export default function MisionVisionScreen({ navigation }: any) {
 
           <Image
             source={require("./QuinesSomos.png")}
-            style={{ width: "100%", height: 320, resizeMode: "contain", marginTop: 15 }}
+            style={{
+              width: "100%",
+              height: 320,
+              resizeMode: "contain",
+              marginTop: 15,
+            }}
           />
         </View>
 
         <View style={[styles.card, { borderColor: "#e87170" }]}>
           <View style={styles.imageContainer}>
             <Image
-           
-              source={{ uri: "https://cdn-icons-png.flaticon.com/512/616/616408.png" }}
+              source={{
+                uri: "https://cdn-icons-png.flaticon.com/512/616/616408.png",
+              }}
               style={styles.image}
             />
           </View>
@@ -76,7 +85,9 @@ export default function MisionVisionScreen({ navigation }: any) {
         <View style={[styles.card, { borderColor: "#9d7bb6" }]}>
           <View style={styles.imageContainer}>
             <Image
-              source={{ uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" }}
+              source={{
+                uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+              }}
               style={styles.image}
             />
           </View>
@@ -93,12 +104,17 @@ export default function MisionVisionScreen({ navigation }: any) {
         <View style={{ marginTop: 20, alignItems: "center" }}>
           <Image
             source={require("./Valores.png")}
-            style={{ width: 500, height: 250, resizeMode: "contain", marginBottom: 50 }}
+            style={{
+              width: 500,
+              height: 250,
+              resizeMode: "contain",
+              marginBottom: 50,
+            }}
           />
         </View>
       </ScrollView>
 
-      {/* BottomMenu fijo */}
+      {/* ✅ Menú inferior importado */}
       <BottomMenu activeTab={activeTab} onTabPress={handleTabPress} />
     </SafeAreaView>
   );

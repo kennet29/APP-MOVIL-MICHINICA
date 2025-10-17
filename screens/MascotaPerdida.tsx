@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  image: { width: "100%", height: 180, borderRadius: 10, marginBottom: 10 },
+  image: { width: "100%", height: 300, borderRadius: 10, marginBottom: 10 },
   info: { paddingHorizontal: 5 },
   nombre: { fontSize: 18, fontWeight: "bold", color: "#fff", marginBottom: 5 },
   texto: { fontSize: 14, color: "#fff" },

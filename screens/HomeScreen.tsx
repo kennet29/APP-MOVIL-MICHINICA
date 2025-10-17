@@ -70,6 +70,9 @@ export default function HomeScreen({ navigation }: any) {
       case "POST":
         navigation.navigate("Publicaciones");
         break;
+      case "ADOPCIÓN":
+        navigation.navigate("Adopciones");
+        break;
       case "GUIAS":
         navigation.navigate("Guia");
         break;
@@ -128,7 +131,7 @@ export default function HomeScreen({ navigation }: any) {
     },
     {
       name: "MAPA",
-      color: cardColors[5],
+      color: cardColors[3],
       icon: <FontAwesome5 name="map-marked-alt" size={28} color="#fff" />,
     },
     {
@@ -138,7 +141,7 @@ export default function HomeScreen({ navigation }: any) {
     },
     {
       name: "REGISTRO VETERINARIO",
-      color: cardColors[7],
+      color: cardColors[0],
       icon: <FontAwesome5 name="stethoscope" size={28} color="#fff" />, // 🩺
     },
   ];

@@ -54,6 +54,10 @@ import CrearOperacion from "./screens/CrearOperaciones";
 import EditarOperacion from "./screens/EditarOperacion";
 import RegistroVeterinario from "./screens/RegistroVeterinario";
 
+// 🐶 Adopciones
+import Adopciones from "./screens/Adopciones";
+import CrearAdopcion from "./screens/CrearAdopcion";
+
 // 🧭 Tipado
 export type RootStackParamList = {
   Login: undefined;
@@ -92,6 +96,10 @@ export type RootStackParamList = {
   CrearOperacion: { mascotaId: string; operacionId?: string };
   EditarOperacion: { mascotaId: string; operacionId: string };
   CrearEnfermedad: { mascotaId: string; enfermedadId?: string };
+
+  // 🐶 Adopciones
+  Adopciones: undefined;
+  CrearAdopcion: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -125,7 +133,7 @@ export default function App() {
         {/* 🔐 Autenticación */}
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Register" component={Register} />
-        <Stack.Screen name="RegistroVeterinario" component={RegistroVeterinario}/>
+        <Stack.Screen name="RegistroVeterinario" component={RegistroVeterinario} />
 
         {/* 🏠 Principales */}
         <Stack.Screen name="Home" component={HomeScreen} />
@@ -162,7 +170,14 @@ export default function App() {
         <Stack.Screen name="CrearMascota" component={CrearMascota} />
         <Stack.Screen name="MascotasPerdidas" component={MascotasPerdidas} />
         <Stack.Screen name="CrearMascotaPerdida" component={CrearMascotaPerdida} />
-        <Stack.Screen name="HistorialMedicoMascota" component={HistorialMedicoMascota} />
+        <Stack.Screen
+          name="HistorialMedicoMascota"
+          component={HistorialMedicoMascota}
+        />
+
+        {/* 🐶 Adopciones */}
+        <Stack.Screen name="Adopciones" component={Adopciones} />
+        <Stack.Screen name="CrearAdopcion" component={CrearAdopcion} />
 
         {/* 🔔 Notificaciones */}
         <Stack.Screen name="Notificaciones" component={Notificaciones} />
