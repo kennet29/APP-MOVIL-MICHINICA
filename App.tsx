@@ -52,10 +52,12 @@ import CrearDesparasitacion from "./screens/CrearDesparasitacion";
 import CrearVisita from "./screens/CrearVisita";
 import CrearOperacion from "./screens/CrearOperaciones";
 import EditarOperacion from "./screens/EditarOperacion";
+import RegistroVeterinario from "./screens/RegistroVeterinario";
 
 // 🧭 Tipado
 export type RootStackParamList = {
   Login: undefined;
+  RegistroVeterinario: undefined;
   Register: undefined;
   Home: undefined;
   Profile: undefined;
@@ -123,6 +125,7 @@ export default function App() {
         {/* 🔐 Autenticación */}
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Register" component={Register} />
+        <Stack.Screen name="RegistroVeterinario" component={RegistroVeterinario}/>
 
         {/* 🏠 Principales */}
         <Stack.Screen name="Home" component={HomeScreen} />

@@ -27,7 +27,7 @@ export default function HomeScreen({ navigation }: any) {
   >("Home");
 
   const titleScale = useRef(new Animated.Value(0)).current;
-  const cardsAnim = useRef([0, 1, 2, 3, 4, 5, 6].map(() => new Animated.Value(0))).current;
+  const cardsAnim = useRef([0, 1, 2, 3, 4, 5, 6, 7].map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
     if (Platform.OS === "android") {
@@ -68,8 +68,8 @@ export default function HomeScreen({ navigation }: any) {
   const handleCardPress = (cardName: string) => {
     switch (cardName) {
       case "POST":
-      navigation.navigate("Publicaciones"); // ✅ Nueva navegación
-      break;
+        navigation.navigate("Publicaciones");
+        break;
       case "GUIAS":
         navigation.navigate("Guia");
         break;
@@ -83,14 +83,26 @@ export default function HomeScreen({ navigation }: any) {
         navigation.navigate("Mapa");
         break;
       case "PRESUPUESTOS":
-        navigation.navigate("Presupuestos"); // 👈 Nueva navegación
+        navigation.navigate("Presupuestos");
+        break;
+      case "REGISTRO VETERINARIO":
+        navigation.navigate("RegistroVeterinario"); // 👈 Nueva navegación
         break;
       default:
         console.log(`Card ${cardName} presionada`);
     }
   };
 
-  const cardColors = ["#e87170", "#f49953", "#9d7bb6", "#00BFFF", "#FFA500", "#32CD32", "#6A5ACD"];
+  const cardColors = [
+    "#e87170",
+    "#f49953",
+    "#9d7bb6",
+    "#00BFFF",
+    "#FFA500",
+    "#32CD32",
+    "#6A5ACD",
+    "#2E8B57", // Nuevo color verde oscuro para registro veterinario
+  ];
 
   const cardData = [
     { name: "POST", color: cardColors[0], icon: <FontAwesome5 name="edit" size={28} color="#fff" /> },
@@ -120,9 +132,14 @@ export default function HomeScreen({ navigation }: any) {
       icon: <FontAwesome5 name="map-marked-alt" size={28} color="#fff" />,
     },
     {
-      name: "PRESUPUESTOS", // 💰 Nueva Card
+      name: "PRESUPUESTOS",
       color: cardColors[6],
       icon: <FontAwesome5 name="wallet" size={28} color="#fff" />,
+    },
+    {
+      name: "REGISTRO VETERINARIO",
+      color: cardColors[7],
+      icon: <FontAwesome5 name="stethoscope" size={28} color="#fff" />, // 🩺
     },
   ];
 
