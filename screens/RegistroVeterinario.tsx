@@ -22,7 +22,6 @@ export default function RegistroVeterinario({ navigation }: any) {
     nombres: "",
     apellidos: "",
     cedulaNumero: "",
-    nivel: "",
     codigoIPSA: "",
     correo: "",
     telefono: "",
@@ -49,16 +48,15 @@ export default function RegistroVeterinario({ navigation }: any) {
   };
 
   const handleRegister = async () => {
-    const { nombres, apellidos, cedulaNumero, nivel, codigoIPSA, correo, telefono } = form;
+    const { nombres, apellidos, cedulaNumero, codigoIPSA, correo, telefono } = form;
 
-    if (!nombres || !apellidos || !cedulaNumero || !nivel || !codigoIPSA || !correo || !telefono) {
+    if (!nombres || !apellidos || !cedulaNumero || !codigoIPSA || !correo || !telefono) {
       Alert.alert("Error", "Por favor completa todos los campos obligatorios");
       return;
     }
 
     setLoading(true);
     try {
-      // Enviar datos al backend
       const response = await fetch("https://backendmaguey.onrender.com/api/Veterinarios", {
         method: "POST",
         headers: {
@@ -68,7 +66,7 @@ export default function RegistroVeterinario({ navigation }: any) {
           nombres,
           apellidos,
           cedulaNumero,
-          nivel,
+          nivel: "universitario", // 🔹 Nivel fijo
           codigoIPSA,
           correo,
           telefono,
@@ -133,13 +131,16 @@ export default function RegistroVeterinario({ navigation }: any) {
       />
 
       <TextInput
-        style={styles.input}
-        placeholder="Cédula Número"
-        placeholderTextColor="#888"
-        keyboardType="numeric"
-        value={form.cedulaNumero}
-        onChangeText={(text) => setForm({ ...form, cedulaNumero: text })}
-      />
+  style={styles.input}
+  placeholder="Cédula Número"
+  placeholderTextColor="#888"
+  value={form.cedulaNumero}
+  onChangeText={(text) => {
+    // 🔹 Solo permite letras (A-Z, a-z), números (0-9) y guiones opcionales
+    const alfanumerico = text.replace(/[^a-zA-Z0-9-]/g, "");
+    setForm({ ...form, cedulaNumero: alfanumerico });
+  }}
+/>
 
       <TouchableOpacity style={styles.uploadButton} onPress={() => pickImage("titulo")}>
         <Text style={styles.uploadText}>
@@ -152,14 +153,6 @@ export default function RegistroVeterinario({ navigation }: any) {
           {cedulaFoto ? "📸 Cédula cargada" : "Subir foto de la Cédula"}
         </Text>
       </TouchableOpacity>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Nivel (Técnico o Universitario)"
-        placeholderTextColor="#888"
-        value={form.nivel}
-        onChangeText={(text) => setForm({ ...form, nivel: text })}
-      />
 
       <TextInput
         style={styles.input}
@@ -193,7 +186,11 @@ export default function RegistroVeterinario({ navigation }: any) {
         onPress={handleRegister}
         disabled={loading}
       >
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Enviar registro</Text>}
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Enviar registro</Text>
+        )}
       </TouchableOpacity>
 
       <Text style={styles.notice}>
