@@ -52,7 +52,10 @@ export default function Publicaciones() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [usuarioId, setUsuarioId] = useState<string | null>(null);
-  const [comentariosVisibles, setComentariosVisibles] = useState<string | null>(null);
+  const [usuarioNombre, setUsuarioNombre] = useState<string>(""); // 🆕 nuevo estado
+  const [comentariosVisibles, setComentariosVisibles] = useState<string | null>(
+    null
+  );
   const [nuevoComentario, setNuevoComentario] = useState("");
 
   const [fontsLoaded] = useFonts({
@@ -71,6 +74,7 @@ export default function Publicaciones() {
       if (storedUser) {
         const parsed = JSON.parse(storedUser);
         setUsuarioId(parsed._id);
+        setUsuarioNombre(parsed.username || "Tú"); // 🆕 guardamos el nombre
       }
     } catch (error) {
       console.error("❌ Error al obtener usuario:", error);
@@ -139,11 +143,13 @@ export default function Publicaciones() {
     setComentariosVisibles((prev) => (prev === id ? null : id));
   };
 
-  // 📝 Enviar nuevo comentario
+  // 📝 Enviar nuevo comentario (actualiza al instante)
   const enviarComentario = async (pubId: string) => {
     if (!usuarioId || nuevoComentario.trim() === "") return;
+
     try {
       const payload = { usuarioId, comentario: nuevoComentario };
+
       const res = await fetch(
         `https://backendmaguey.onrender.com/api/publicaciones/${pubId}/comentarios`,
         {
@@ -152,10 +158,26 @@ export default function Publicaciones() {
           body: JSON.stringify(payload),
         }
       );
+
       const data = await res.json();
+
       if (data.success) {
+        const nuevo = {
+          comentario: nuevoComentario,
+          usuarioId: { _id: usuarioId, username: usuarioNombre },
+          fecha: new Date().toISOString(),
+        };
+
+        // ✅ Actualizamos localmente sin recargar toda la vista
+        setPublicaciones((prev) =>
+          prev.map((p) =>
+            p._id === pubId
+              ? { ...p, comentarios: [...(p.comentarios || []), nuevo] }
+              : p
+          )
+        );
+
         setNuevoComentario("");
-        await cargarPublicaciones();
       }
     } catch (error) {
       console.error("❌ Error al enviar comentario:", error);
@@ -166,7 +188,9 @@ export default function Publicaciones() {
     return (
       <View style={styles.loading}>
         <ActivityIndicator size="large" color="#00BFFF" />
-        <Text style={{ color: "#555", marginTop: 10 }}>Cargando publicaciones...</Text>
+        <Text style={{ color: "#555", marginTop: 10 }}>
+          Cargando publicaciones...
+        </Text>
       </View>
     );
   }
@@ -178,7 +202,9 @@ export default function Publicaciones() {
       </View>
 
       <ScrollView
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         contentContainerStyle={{ paddingBottom: 80 }}
       >
         {publicaciones.length === 0 ? (
@@ -193,7 +219,9 @@ export default function Publicaciones() {
                     {pub.usuarioId?.username || "Usuario desconocido"}
                   </Text>
                   <Text style={styles.date}>
-                    {pub.fecha ? new Date(pub.fecha).toLocaleDateString() : ""}
+                    {pub.fecha
+                      ? new Date(pub.fecha).toLocaleDateString()
+                      : ""}
                   </Text>
                 </View>
               </View>
@@ -214,7 +242,10 @@ export default function Publicaciones() {
               )}
 
               <View style={styles.actions}>
-                <TouchableOpacity style={styles.actionButton} onPress={() => handleLike(pub._id)}>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => handleLike(pub._id)}
+                >
                   <FontAwesome5
                     name="heart"
                     size={22}
@@ -235,7 +266,8 @@ export default function Publicaciones() {
               </View>
 
               <Text style={styles.likesText}>
-                {pub.likes?.length || 0} {pub.likes?.length === 1 ? "like" : "likes"}
+                {pub.likes?.length || 0}{" "}
+                {pub.likes?.length === 1 ? "like" : "likes"}
               </Text>
 
               {pub.contenido && (
@@ -270,8 +302,14 @@ export default function Publicaciones() {
                         value={nuevoComentario}
                         onChangeText={setNuevoComentario}
                       />
-                      <TouchableOpacity onPress={() => enviarComentario(pub._id)}>
-                        <FontAwesome5 name="paper-plane" size={20} color="#329bd7" />
+                      <TouchableOpacity
+                        onPress={() => enviarComentario(pub._id)}
+                      >
+                        <FontAwesome5
+                          name="paper-plane"
+                          size={20}
+                          color="#329bd7"
+                        />
                       </TouchableOpacity>
                     </View>
                   )}
@@ -297,8 +335,12 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   titleContainer: { marginTop: 25, alignItems: "center" },
   loading: { flex: 1, justifyContent: "center", alignItems: "center" },
-  noPosts: { textAlign: "center", marginTop: 40, fontFamily: "Poppins_Regular", color: "#777" },
-
+  noPosts: {
+    textAlign: "center",
+    marginTop: 40,
+    fontFamily: "Poppins_Regular",
+    color: "#777",
+  },
   postContainer: {
     borderWidth: 1,
     borderColor: "#e0e0e0",
@@ -313,7 +355,6 @@ const styles = StyleSheet.create({
   username: { fontFamily: "Poppins_Bold", fontSize: 15, color: "#333" },
   date: { fontFamily: "Poppins_Regular", fontSize: 12, color: "#777" },
   postImage: { width: "100%", height: width * 0.9, backgroundColor: "#ddd" },
-
   placeholderImage: {
     width: "100%",
     height: width * 0.9,
@@ -321,17 +362,41 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  placeholderText: { color: "#aaa", fontFamily: "Poppins_Regular", marginTop: 5 },
-
+  placeholderText: {
+    color: "#aaa",
+    fontFamily: "Poppins_Regular",
+    marginTop: 5,
+  },
   actions: { flexDirection: "row", paddingHorizontal: 15, paddingTop: 10 },
   actionButton: { marginRight: 20 },
-  likesText: { paddingHorizontal: 15, paddingTop: 5, fontFamily: "Poppins_Bold", color: "#222" },
-  caption: { paddingHorizontal: 15, paddingVertical: 8, fontFamily: "Poppins_Regular", color: "#333" },
-
+  likesText: {
+    paddingHorizontal: 15,
+    paddingTop: 5,
+    fontFamily: "Poppins_Bold",
+    color: "#222",
+  },
+  caption: {
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    fontFamily: "Poppins_Regular",
+    color: "#333",
+  },
   commentSection: { borderTopWidth: 1, borderTopColor: "#ddd", padding: 10 },
-  commentText: { fontFamily: "Poppins_Regular", color: "#333", marginBottom: 4 },
-  noComments: { fontFamily: "Poppins_Regular", color: "#888", fontStyle: "italic" },
-  commentInputRow: { flexDirection: "row", alignItems: "center", marginTop: 8 },
+  commentText: {
+    fontFamily: "Poppins_Regular",
+    color: "#333",
+    marginBottom: 4,
+  },
+  noComments: {
+    fontFamily: "Poppins_Regular",
+    color: "#888",
+    fontStyle: "italic",
+  },
+  commentInputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+  },
   commentInput: {
     flex: 1,
     borderWidth: 1,
@@ -342,8 +407,6 @@ const styles = StyleSheet.create({
     height: 36,
     marginRight: 10,
   },
-
-  // 📍 Estilo del botón flotante
   fab: {
     position: "absolute",
     bottom: 25,

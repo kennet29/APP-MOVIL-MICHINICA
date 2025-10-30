@@ -1,309 +1,331 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
+  TouchableOpacity,
   ScrollView,
-  Image,
-  ActivityIndicator,
   Alert,
+  Image,
+  Animated,
+  Platform,
+  ActivityIndicator,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import * as ImagePicker from "expo-image-picker";
+import { FontAwesome5 } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function CrearMascota({ navigation }: any) {
+export default function CrearMascotaPerdida({ navigation }: any) {
   const [nombre, setNombre] = useState("");
   const [especie, setEspecie] = useState("");
   const [raza, setRaza] = useState("");
-  const [cumpleaños, setCumpleaños] = useState<Date | null>(null);
   const [sexo, setSexo] = useState("");
   const [descripcion, setDescripcion] = useState("");
-  const [tarjetaVeterinaria, setTarjetaVeterinaria] = useState(false);
-  const [foto, setFoto] = useState<any>(null);
+  const [fechaPerdida, setFechaPerdida] = useState(new Date());
+  const [lugarPerdida, setLugarPerdida] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [email, setEmail] = useState("");
+  const [foto, setFoto] = useState<string | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [usuarioId, setUsuarioId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // 🔹 Obtener usuario guardado
+  // 🟢 Cargar usuario guardado desde AsyncStorage
   useEffect(() => {
     const loadUsuario = async () => {
-      const userData = await AsyncStorage.getItem("usuario");
-      if (userData) {
-        const parsed = JSON.parse(userData);
-        setUsuarioId(parsed._id);
-        console.log("👤 Usuario encontrado:", parsed);
-      } else {
-        console.warn("⚠️ No se encontró usuario guardado en AsyncStorage");
+      try {
+        const userData = await AsyncStorage.getItem("usuario");
+        if (userData) {
+          const parsed = JSON.parse(userData);
+          setUsuarioId(parsed._id);
+          console.log("👤 Usuario encontrado:", parsed);
+        } else {
+          console.warn("⚠️ No se encontró usuario en AsyncStorage");
+          Alert.alert("Sesión expirada", "Por favor inicia sesión nuevamente");
+          navigation.replace("Login");
+        }
+      } catch (error) {
+        console.error("❌ Error al cargar usuario:", error);
       }
     };
     loadUsuario();
   }, []);
 
-  // 🔹 Elegir foto
-  const pickImage = async () => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      Alert.alert("Permiso denegado", "Se necesita acceso a la galería");
-      return;
-    }
+  // Animación ZooNica
+  const titleScale = useRef(new Animated.Value(0)).current;
+  const titleLetters = [
+    { letter: "Z", color: "#e87170" },
+    { letter: "O", color: "#f49953" },
+    { letter: "O", color: "#9d7bb6" },
+    { letter: "N", color: "#00BFFF" },
+    { letter: "I", color: "#FFA500" },
+    { letter: "C", color: "#9d7bb6" },
+    { letter: "A", color: "#00BFFF" },
+  ];
 
+  useEffect(() => {
+    Animated.spring(titleScale, { toValue: 1, useNativeDriver: true }).start();
+  }, []);
+
+  // 📷 Seleccionar imagen
+  const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
+      allowsEditing: true,
+      quality: 0.7,
     });
-
-    if (!result.canceled) {
-      setFoto(result.assets[0]);
-    }
+    if (!result.canceled) setFoto(result.assets[0].uri);
   };
 
-  // 🔹 Crear mascota
-  const handleCrearMascota = async () => {
-    if (!nombre || !especie || !sexo || !usuarioId) {
-      Alert.alert("Error", "Completa todos los campos obligatorios");
+  // 📤 Enviar formulario
+  const handleSubmit = async () => {
+    if (!usuarioId) {
+      Alert.alert("Error", "No se ha encontrado tu usuario, vuelve a iniciar sesión.");
       return;
     }
-
-    const formData = new FormData();
-    formData.append("nombre", nombre);
-    formData.append("especie", especie);
-    formData.append("raza", raza);
-    formData.append("sexo", sexo);
-    formData.append("descripcion", descripcion);
-    formData.append("tarjetaVeterinaria", String(tarjetaVeterinaria));
-    formData.append("usuarioId", usuarioId);
-    if (cumpleaños) formData.append("cumpleaños", cumpleaños.toISOString());
-    if (foto) {
-      formData.append("fotos", {
-        uri: foto.uri,
-        name: "foto_mascota.jpg",
-        type: "image/jpeg",
-      } as any);
+    if (!nombre.trim() || !especie || !sexo || !lugarPerdida.trim() || !telefono.trim()) {
+      Alert.alert("Error", "Por favor completa todos los campos obligatorios.");
+      return;
     }
-
-    const debugData: Record<string, any> = {
-      nombre,
-      especie,
-      raza,
-      sexo,
-      descripcion,
-      tarjetaVeterinaria,
-      usuarioId,
-      cumpleaños: cumpleaños ? cumpleaños.toISOString() : null,
-      foto: foto ? "IMAGEN" : "Sin foto",
-    };
-    console.log("📦 Datos enviados al backend:", debugData);
 
     try {
       setLoading(true);
-      const res = await fetch("https://backendmaguey.onrender.com/api/mascotas", {
+      const formData = new FormData();
+      formData.append("nombre", nombre.trim());
+      formData.append("especie", especie);
+      formData.append("raza", raza);
+      formData.append("sexo", sexo);
+      formData.append("descripcion", descripcion.trim());
+      formData.append("fechaPerdida", fechaPerdida.toISOString());
+      formData.append("lugarPerdida", lugarPerdida.trim());
+      formData.append("telefono", telefono.trim());
+      if (email) formData.append("email", email.trim());
+      formData.append("usuarioId", usuarioId);
+
+      if (foto) {
+        const filename = foto.split("/").pop();
+        const type = filename?.split(".").pop();
+        formData.append("fotos", {
+          uri: foto,
+          name: filename,
+          type: `image/${type}`,
+        } as any);
+      }
+
+      const res = await fetch("https://backendmaguey.onrender.com/api/mascotas-perdidas", {
         method: "POST",
         body: formData,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
       });
 
       const data = await res.json();
-      console.log("📬 Respuesta del backend:", data);
+      console.log("📥 Respuesta backend:", data);
 
-      if (!res.ok) {
-        Alert.alert("Error", data.message || "No se pudo crear la mascota");
-      } else {
-        Alert.alert("Éxito", "Mascota creada correctamente 🎉");
+      if (res.ok) {
+        Alert.alert("Éxito", "Mascota perdida registrada correctamente 🎉");
         navigation.goBack();
+      } else {
+        Alert.alert("Error", data.message || "No se pudo crear la publicación");
       }
     } catch (error) {
-      console.error("❌ Error al guardar mascota:", error);
-      Alert.alert("Error", "No se pudo conectar al servidor");
+      console.error("❌ Error frontend:", error);
+      Alert.alert("Error", "Ocurrió un problema al registrar la mascota");
     } finally {
       setLoading(false);
     }
   };
 
+  if (!usuarioId) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#329bd7" />
+        <Text style={{ marginTop: 10, color: "#555" }}>Cargando usuario...</Text>
+      </View>
+    );
+  }
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Registrar Mascota 🐾</Text>
+    <ScrollView style={styles.container}>
+      {/* ZooNica */}
+      <View style={{ flexDirection: "row", justifyContent: "center", marginBottom: 20 }}>
+        {titleLetters.map((item, index) => (
+          <Animated.Text
+            key={index}
+            style={[styles.titleZoo, { color: item.color, transform: [{ scale: titleScale }] }]}
+          >
+            {item.letter}
+          </Animated.Text>
+        ))}
+      </View>
+
+      <Text style={styles.subtitle}>Registrar Mascota Perdida</Text>
 
       <TextInput
         style={styles.input}
         placeholder="Nombre de la mascota"
-        placeholderTextColor="#888"
         value={nombre}
         onChangeText={setNombre}
       />
 
+      {/* 🐶 Picker de especie */}
       <Text style={styles.label}>Especie</Text>
-      <Picker
-        selectedValue={especie}
-        onValueChange={(value) => setEspecie(value)}
-        style={styles.picker}
-      >
-        <Picker.Item label="Selecciona especie..." value="" />
-        <Picker.Item label="Perro" value="perro" />
-        <Picker.Item label="Gato" value="gato" />
-        <Picker.Item label="Conejo" value="conejo" />
-        <Picker.Item label="Peces" value="otro" />
-      </Picker>
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={especie}
+          onValueChange={setEspecie}
+          style={styles.picker}
+          dropdownIconColor="#329bd7"
+        >
+          <Picker.Item label="Selecciona especie..." value="" color="#888" />
+          <Picker.Item label="Perro" value="perro" color="#000" />
+          <Picker.Item label="Gato" value="gato" color="#000" />
+          <Picker.Item label="Conejo" value="conejo" color="#000" />
+          <Picker.Item label="Pez" value="pez" color="#000" />
+          <Picker.Item label="Ave" value="ave" color="#000" />
+          <Picker.Item label="Otro" value="otro" color="#000" />
+        </Picker>
+      </View>
 
       <TextInput
         style={styles.input}
         placeholder="Raza (opcional)"
-        placeholderTextColor="#000000ff"
         value={raza}
         onChangeText={setRaza}
       />
 
+      {/* 🚻 Picker de sexo */}
       <Text style={styles.label}>Sexo</Text>
-      <Picker
-        selectedValue={sexo}
-        onValueChange={(value) => setSexo(value)}
-        style={styles.picker}
-      >
-        <Picker.Item label="Selecciona sexo..." value="" />
-        <Picker.Item label="Macho" value="macho" />
-        <Picker.Item label="Hembra" value="hembra" />
-      </Picker>
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={sexo}
+          onValueChange={setSexo}
+          style={styles.picker}
+          dropdownIconColor="#329bd7"
+        >
+          <Picker.Item label="Selecciona sexo..." value="" color="#888" />
+          <Picker.Item label="Macho" value="macho" color="#000" />
+          <Picker.Item label="Hembra" value="hembra" color="#000" />
+        </Picker>
+      </View>
 
-      <TouchableOpacity
-        onPress={() => setShowDatePicker(true)}
-        style={styles.dateButton}
-      >
-        <Text style={styles.dateText}>
-          {cumpleaños
-            ? `Cumpleaños: ${cumpleaños.toLocaleDateString()}`
-            : "Seleccionar cumpleaños"}
-        </Text>
+      <TextInput
+        style={[styles.input, { height: 80 }]}
+        placeholder="Descripción (opcional)"
+        multiline
+        value={descripcion}
+        onChangeText={setDescripcion}
+      />
+
+      {/* 📅 Fecha */}
+      <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
+        <FontAwesome5 name="calendar-alt" size={18} color="#fff" />
+        <Text style={styles.dateText}>{fechaPerdida.toLocaleDateString()}</Text>
       </TouchableOpacity>
-
       {showDatePicker && (
         <DateTimePicker
-          value={cumpleaños || new Date()}
+          value={fechaPerdida}
           mode="date"
-          display="default"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
           onChange={(event, date) => {
             setShowDatePicker(false);
-            if (date) setCumpleaños(date);
+            if (date) setFechaPerdida(date);
           }}
         />
       )}
 
-      <TouchableOpacity
-        style={[
-          styles.vetButton,
-          { backgroundColor: tarjetaVeterinaria ? "#28a745" : "#aaa" },
-        ]}
-        onPress={() => setTarjetaVeterinaria(!tarjetaVeterinaria)}
-      >
-        <Text style={styles.vetButtonText}>
-          {tarjetaVeterinaria ? "✅ Tiene tarjeta veterinaria" : "❌ No tiene tarjeta"}
-        </Text>
-      </TouchableOpacity>
-
       <TextInput
-        style={[styles.input, { height: 80 }]}
-        placeholder="Descripción"
-        placeholderTextColor="#888"
-        value={descripcion}
-        onChangeText={setDescripcion}
-        multiline
+        style={styles.input}
+        placeholder="Lugar de pérdida"
+        value={lugarPerdida}
+        onChangeText={setLugarPerdida}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Teléfono de contacto"
+        value={telefono}
+        onChangeText={setTelefono}
+        keyboardType="phone-pad"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Correo electrónico (opcional)"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
       />
 
-      {foto && <Image source={{ uri: foto.uri }} style={styles.preview} />}
-
-      <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
-        <Text style={styles.photoText}>
-          {foto ? "Cambiar foto" : "Seleccionar foto 📷"}
-        </Text>
+      {/* 📸 Subir foto */}
+      <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+        <FontAwesome5 name="camera" size={18} color="#fff" />
+        <Text style={styles.uploadText}>{foto ? " Cambiar Foto" : " Subir Foto"}</Text>
       </TouchableOpacity>
 
+      {foto && <Image source={{ uri: foto }} style={styles.preview} />}
+
+      {/* 💾 Guardar */}
       <TouchableOpacity
-        style={styles.saveButton}
-        onPress={handleCrearMascota}
+        style={[styles.submitButton, loading && { opacity: 0.7 }]}
+        onPress={handleSubmit}
         disabled={loading}
       >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.saveText}>Guardar Mascota</Text>
-        )}
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitText}>Guardar Mascota</Text>}
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 20,
-    color: "#329bd7",
-  },
+  container: { flex: 1, padding: 20, backgroundColor: "#fff" },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" },
+  titleZoo: { fontSize: 40, marginBottom: 10, textAlign: "center", fontWeight: "bold" },
+  subtitle: { fontSize: 20, fontWeight: "bold", marginBottom: 20, textAlign: "center", color: "#333" },
+  label: { fontSize: 16, fontWeight: "bold", marginTop: 10 },
   input: {
     borderWidth: 1.2,
     borderColor: "#b0b0b0",
     borderRadius: 8,
     padding: 12,
-    marginVertical: 8,
+    marginVertical: 10,
+    fontFamily: "Poppins_Regular",
     fontSize: 16,
-    color: "#333", // 🟢 texto oscuro
+    color: "#333",
     backgroundColor: "#fff",
   },
-  label: {
-    fontSize: 16,
-    marginTop: 10,
-    fontWeight: "bold",
+  pickerContainer: {
+    borderWidth: 1.2,
+    borderColor: "#b0b0b0",
+    borderRadius: 8,
+    marginVertical: 10,
+    overflow: "hidden",
+    backgroundColor: "#fff",
   },
   picker: {
-    backgroundColor: "#ffffffff",
+    backgroundColor: "#fff",
     borderRadius: 8,
-    marginVertical: 5,
-    color:"#000",
+    color: "#000",
+    height: 50,
   },
   dateButton: {
-    backgroundColor: "#ddd",
-    padding: 10,
-    borderRadius: 8,
-    marginVertical: 8,
-  },
-  dateText: { textAlign: "center", color: "#333" },
-  vetButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1DB954",
     padding: 12,
     borderRadius: 8,
-    alignItems: "center",
-    marginVertical: 10,
+    marginVertical: 12,
   },
-  vetButtonText: { color: "#fff", fontWeight: "bold" },
-  photoButton: {
+  dateText: { marginLeft: 10, color: "#fff", fontSize: 16 },
+  uploadButton: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#007bff",
     padding: 12,
     borderRadius: 8,
-    alignItems: "center",
-    marginVertical: 10,
+    marginBottom: 12,
   },
-  photoText: { color: "#fff", fontWeight: "bold" },
-  preview: {
-    width: "100%",
-    height: 200,
-    borderRadius: 10,
-    marginVertical: 10,
-  },
-  saveButton: {
-    backgroundColor: "#28a745",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 15,
-  },
-  saveText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  uploadText: { marginLeft: 10, color: "#fff", fontSize: 16 },
+  preview: { width: "100%", height: 200, borderRadius: 8, marginVertical: 10 },
+  submitButton: { backgroundColor: "#e87170", padding: 15, borderRadius: 8, alignItems: "center", marginTop: 10 },
+  submitText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
 });

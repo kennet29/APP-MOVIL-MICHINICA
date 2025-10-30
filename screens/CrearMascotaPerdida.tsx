@@ -56,13 +56,12 @@ export default function CrearMascotaPerdida({ navigation }: any) {
 
   // Animación ZooNica
   const titleScale = useRef(new Animated.Value(0)).current;
-  const cardColors = ["#e87170", "#f49953", "#9d7bb6", "#00BFFF", "#FFA500"];
   const titleLetters = [
-    { letter: "Z", color: cardColors[0] },
-    { letter: "O", color: cardColors[1] },
-    { letter: "O", color: cardColors[2] },
-    { letter: "N", color: cardColors[3] },
-    { letter: "I", color: cardColors[4] },
+    { letter: "Z", color: "#e87170" },
+    { letter: "O", color: "#f49953" },
+    { letter: "O", color: "#9d7bb6" },
+    { letter: "N", color: "#00BFFF" },
+    { letter: "I", color: "#FFA500" },
     { letter: "C", color: "#9d7bb6" },
     { letter: "A", color: "#00BFFF" },
   ];
@@ -172,25 +171,44 @@ export default function CrearMascotaPerdida({ navigation }: any) {
 
       {/* 🐶 Picker de especie */}
       <Text style={styles.label}>Especie</Text>
-      <Picker selectedValue={especie} onValueChange={setEspecie} style={styles.picker}>
-        <Picker.Item label="Selecciona especie..." value="" />
-        <Picker.Item label="Perro" value="perro" />
-        <Picker.Item label="Gato" value="gato" />
-        <Picker.Item label="Conejo" value="conejo" />
-        <Picker.Item label="Pez" value="pez" />
-        <Picker.Item label="Ave" value="ave" />
-        <Picker.Item label="Otro" value="otro" />
-      </Picker>
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={especie}
+          onValueChange={setEspecie}
+          style={styles.picker}
+          dropdownIconColor="#329bd7"
+        >
+          <Picker.Item label="Selecciona especie..." value="" color="#888" />
+          <Picker.Item label="Perro" value="perro" color="#000" />
+          <Picker.Item label="Gato" value="gato" color="#000" />
+          <Picker.Item label="Conejo" value="conejo" color="#000" />
+          <Picker.Item label="Pez" value="pez" color="#000" />
+          <Picker.Item label="Ave" value="ave" color="#000" />
+          <Picker.Item label="Otro" value="otro" color="#000" />
+        </Picker>
+      </View>
 
-      <TextInput style={styles.input} placeholder="Raza (opcional)" value={raza} onChangeText={setRaza} />
+      <TextInput
+        style={styles.input}
+        placeholder="Raza (opcional)"
+        value={raza}
+        onChangeText={setRaza}
+      />
 
       {/* 🚻 Picker de sexo */}
       <Text style={styles.label}>Sexo</Text>
-      <Picker selectedValue={sexo} onValueChange={setSexo} style={styles.picker}>
-        <Picker.Item label="Selecciona sexo..." value="" />
-        <Picker.Item label="Macho" value="macho" />
-        <Picker.Item label="Hembra" value="hembra" />
-      </Picker>
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={sexo}
+          onValueChange={setSexo}
+          style={styles.picker}
+          dropdownIconColor="#329bd7"
+        >
+          <Picker.Item label="Selecciona sexo..." value="" color="#888" />
+          <Picker.Item label="Macho" value="macho" color="#000" />
+          <Picker.Item label="Hembra" value="hembra" color="#000" />
+        </Picker>
+      </View>
 
       <TextInput
         style={[styles.input, { height: 80 }]}
@@ -264,7 +282,7 @@ const styles = StyleSheet.create({
   titleZoo: { fontSize: 40, marginBottom: 10, textAlign: "center", fontWeight: "bold" },
   subtitle: { fontSize: 20, fontWeight: "bold", marginBottom: 20, textAlign: "center", color: "#333" },
   label: { fontSize: 16, fontWeight: "bold", marginTop: 10 },
- input: {
+  input: {
     borderWidth: 1.2,
     borderColor: "#b0b0b0",
     borderRadius: 8,
@@ -272,13 +290,40 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     fontFamily: "Poppins_Regular",
     fontSize: 16,
-    color: "#333", // texto del usuario oscuro
+    color: "#333",
     backgroundColor: "#fff",
   },
-  picker: { backgroundColor: "#fff", borderRadius: 8, marginVertical: 5,color: "#333", },
-  dateButton: { flexDirection: "row", alignItems: "center", backgroundColor: "#1DB954", padding: 12, borderRadius: 8, marginVertical: 12 },
+  pickerContainer: {
+    borderWidth: 1.2,
+    borderColor: "#b0b0b0",
+    borderRadius: 8,
+    marginVertical: 10,
+    overflow: "hidden",
+    backgroundColor: "#fff",
+  },
+  picker: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    color: "#000",
+    height: 50,
+  },
+  dateButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1DB954",
+    padding: 12,
+    borderRadius: 8,
+    marginVertical: 12,
+  },
   dateText: { marginLeft: 10, color: "#fff", fontSize: 16 },
-  uploadButton: { flexDirection: "row", alignItems: "center", backgroundColor: "#007bff", padding: 12, borderRadius: 8, marginBottom: 12 },
+  uploadButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#007bff",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
   uploadText: { marginLeft: 10, color: "#fff", fontSize: 16 },
   preview: { width: "100%", height: 200, borderRadius: 8, marginVertical: 10 },
   submitButton: { backgroundColor: "#e87170", padding: 15, borderRadius: 8, alignItems: "center", marginTop: 10 },
